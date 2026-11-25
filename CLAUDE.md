@@ -11,7 +11,7 @@
 
 ## 사용자 메모
 - 주로 **CARDIO / HYROX** 수업을 듣는다 → 처방을 전달할 때 그 세션을 먼저, 자세히. 나머지는 요청하면.
-- PB 를 파운드로 말한다 → `equipment.barbell_unit: lb` (바벨은 lb, 덤벨·케틀벨은 kg). 사용자가 kg 이 편하다고 하면 바꾼다.
+- 바벨은 파운드, 덤벨·케틀벨은 kg 을 쓴다 (2026-11-25 본인 확인) → `equipment.barbell_unit: lb`.
 - `preferred_machine` 은 아직 미확인(기본 row). 머신 종목 피드백을 받을 때 어떤 머신이었는지 확인한다.
 
 ## 명령

@@ -141,19 +141,19 @@
       "sd": 0.1
     },
     "loadpref": {
-      "value": 0.1692,
+      "value": 0.2495,
       "sd": 0.12
     },
     "met": {
-      "value": 0.0455,
+      "value": 0.0597,
       "sd": 0.1616
     },
     "met.cat:G": {
-      "value": 0.0041,
+      "value": 0.0054,
       "sd": 0.0994
     },
     "met.cat:W": {
-      "value": 0.0073,
+      "value": 0.0095,
       "sd": 0.0982
     },
     "met.dur:long": {
@@ -161,7 +161,7 @@
       "sd": 0.08
     },
     "met.dur:medium": {
-      "value": 0.0073,
+      "value": 0.0096,
       "sd": 0.0777
     },
     "met.dur:short": {
@@ -256,6 +256,6 @@
     "pull_h": 0.45,
     "plyo": 1.97
   },
-  "systemic_fatigue": 1.17,
+  "systemic_fatigue": 1.33,
   "acwr": null
 }
