@@ -22,7 +22,13 @@ python -m coach plan 2026-11-25    # 처방서 → data/plans/ 저장 (+ -s weig
 python -m coach review 2026-11-25  # 그날 기록: 예측 vs 실제, 무엇이 갱신됐는지
 python -m coach status             # 능력치 현황 → data/athlete/status.md, state.json
 python -m pytest -q                # 엔진을 고쳤으면 반드시
+python -m coach tools              # 도구(API/MCP) 목록
+python -m coach call <도구> '<json>'   # MCP 와 같은 도구를 직접 호출 (-m: markdown 만 출력)
 ```
+
+기록·프로필·프로그램을 **쓸 때는 YAML 을 손으로 고치지 말고 `python -m coach call ...` 도구를 쓴다**
+(단위 변환·검증·덮어쓰기 규칙이 MCP 로 붙는 다른 에이전트와 똑같아진다). 입력 규칙은
+`coach/data/conventions.md`, 스키마는 `coach/models.py`. 카탈로그에 없는 동작 추가 같은 구조 변경만 파일을 직접 고친다.
 
 ## 작업 흐름
 
@@ -52,6 +58,8 @@ python -m pytest -q                # 엔진을 고쳤으면 반드시
 `profile.yaml` 의 값 또는 `benchmarks` 에 날짜와 함께 추가한다. 체중이 바뀌면 `bodyweight_kg` 갱신.
 
 ## 엔진을 고칠 때
+- 계층: 엔진(계산) ← `api.py`(도구: 검증·저장) ← `mcp_server.py`/`cli.py`(껍데기). 엔진과 도구 계층에 LLM 호출을 넣지 않는다.
+  도구를 추가·변경하면 `docs/mcp.md` 표와 `conventions.md`, `tests/test_api.py` 를 같이 고친다.
 - 사전값(수준별 기준, 동작 비율, 사이클 시간)은 `coach/catalog.py`, `coach/data/movements.yaml`.
   개인 편차는 사전값을 고치지 말고 기록으로 학습되게 둔다. 사전값은 "누구에게나" 틀렸을 때만 고친다.
 - 처방(`strength.py`, `metcon.py`)과 피드백 해석(`feedback.py`)은 같은 식을 써야 한다

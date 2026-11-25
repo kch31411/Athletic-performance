@@ -61,11 +61,17 @@ Claude Code 세션에서 대화로 쓴다(`CLAUDE.md` 에 절차가 있다).
 직접 돌릴 수도 있다.
 
 ```bash
-pip install numpy pyyaml pytest
+pip install numpy pyyaml pydantic pytest   # MCP 서버까지 쓰려면 + mcp
 python -m coach plan 2026-11-25
 python -m coach review 2026-11-25
 python -m coach status
 ```
+
+## 다른 에이전트와 연동 (MCP)
+
+비서 에이전트 등 외부 LLM 은 MCP 서버(`python -m coach.mcp_server`)의 도구 24개로 이 시스템을 쓴다.
+엔진 안에는 LLM 이 없고, 에이전트는 칠판·말을 **단위·id·형식이 강제된 입력**으로 옮기는 일만 한다.
+도구 목록, 스키마 원칙, 설정 방법은 [`docs/mcp.md`](docs/mcp.md).
 
 ## 구조
 
@@ -79,9 +85,12 @@ coach/
   feedback.py   기록 → 관측 → 갱신, 피로 누적
   replay.py     프로필 + 기록 전체를 재생해 현재 상태를 만든다
   render.py     처방서·현황·리뷰 출력        cli.py
+  models.py     도구 입력 타입(JSON 스키마)  api.py  도구 계층(검증·저장·멱등)
+  planjson.py   처방을 JSON 으로             mcp_server.py  MCP 서버(stdio/HTTP)
 data/
   athlete/profile.yaml   workouts/   logs/   plans/
-docs/schema.md
+docs/schema.md   저장 파일(YAML) 형식
+docs/mcp.md      MCP 도구와 연동 방법
 ```
 
 ## 한계

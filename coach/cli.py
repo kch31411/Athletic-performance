@@ -5,6 +5,8 @@
     python -m coach plan 2026-11-25 -s weight cardio
     python -m coach review 2026-11-25      그날 기록의 예측 vs 실제
     python -m coach status                 능력치 현황 (data/athlete/status.md, state.json 갱신)
+    python -m coach tools                  도구(API/MCP) 목록
+    python -m coach call <도구> '<json>'   MCP 와 같은 도구를 직접 호출 (검증·멱등 동일)
 """
 from __future__ import annotations
 
@@ -67,6 +69,31 @@ def cmd_status(root: Path, args) -> int:
     return 0
 
 
+def cmd_tools(root: Path, _args) -> int:
+    from . import api
+    for name, spec in api.TOOLS.items():
+        doc = " ".join((spec["fn"].__doc__ or "").split())
+        print(f"{'W' if spec['writes'] else 'R'}  {name:24s} {doc[:110]}")
+    return 0
+
+
+def cmd_call(root: Path, args) -> int:
+    from pydantic import ValidationError
+
+    from . import api
+    api.set_root(root)
+    try:
+        out = api.call(args.tool, json.loads(args.json or "{}"))
+    except (api.ApiError, ValidationError) as e:
+        print(json.dumps({"error": str(e)}, ensure_ascii=False, indent=2))
+        return 1
+    if args.markdown and "markdown" in out:
+        print(out["markdown"])
+    else:
+        print(json.dumps(out, ensure_ascii=False, indent=2, default=str))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="coach", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -83,6 +110,12 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("status")
     p.add_argument("date", nargs="?")
     p.set_defaults(fn=cmd_status)
+    sub.add_parser("tools").set_defaults(fn=cmd_tools)
+    p = sub.add_parser("call")
+    p.add_argument("tool")
+    p.add_argument("json", nargs="?")
+    p.add_argument("-m", "--markdown", action="store_true", help="결과의 markdown 필드만 출력")
+    p.set_defaults(fn=cmd_call)
     args = ap.parse_args(argv)
     return args.fn(args.root, args)
 
