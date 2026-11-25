@@ -15,8 +15,11 @@ FATIGUE_C = 0.012    # 국소 피로 1단위당 근력 저하(로그)
 SYS_C_STRENGTH = 0.008
 SYS_C_ENGINE = 0.02
 MAX_PENALTY = 0.12
+LB = 0.45359237
+LONG_T = 1200.0      # 이보다 긴 지속 운동은 T^-0.06 으로 출력이 떨어진다(리겔 공식 근사)
 
 DEFAULT_EQUIPMENT = {
+    "barbell_unit": "kg",          # kg | lb (lb 면 45lb 바, 5lb 단위로 처방)
     "barbell_kg": 20.0,
     "barbell_step_kg": 2.5,
     "dumbbells_kg": [2, 3, 4, 5, 6, 7, 8, 9, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35, 40],
@@ -38,6 +41,8 @@ def normalize_profile(raw: dict) -> dict:
     if sex == "f":
         eq["barbell_kg"] = 15.0
     eq.update(p.get("equipment") or {})
+    if eq["barbell_unit"] == "lb" and "barbell_kg" not in (p.get("equipment") or {}):
+        eq["barbell_kg"] = (45.0 if sex == "m" else 35.0) * LB
     p["equipment"] = eq
     p["benchmarks"] = p.get("benchmarks") or []
     return p
@@ -169,7 +174,7 @@ class Athlete:
         eq = self.profile["equipment"]
         imp = m["implement"]
         if imp == "barbell":
-            step = eq["barbell_step_kg"]
+            step = 5.0 * LB if eq["barbell_unit"] == "lb" else eq["barbell_step_kg"]
             return max(eq["barbell_kg"], round(ext / step) * step)
         if imp in ("dumbbell", "kettlebell"):
             opts = eq["dumbbells_kg" if imp == "dumbbell" else "kettlebells_kg"]
@@ -204,7 +209,12 @@ class Athlete:
     def erg_rate(self, mod: str, duration_s: float, today: bool = True) -> float:
         """duration_s 동안 유지 가능한 최대 평균 출력 (cal/초)."""
         boost = 1.0 + self.ana_sec() / max(duration_s, 15.0)
-        return self.erg_cp(mod, today) * min(boost, 2.2)
+        decay = (duration_s / LONG_T) ** -0.06 if duration_s > LONG_T else 1.0
+        return self.erg_cp(mod, today) * min(boost, 2.2) * decay
+
+    def run_speed(self, duration_s: float, today: bool = True) -> float:
+        """duration_s 동안 유지 가능한 러닝 속도(m/s)."""
+        return self.run_speed_from_rate(self.erg_rate("run", duration_s, today))
 
     def erg_speed(self, mod: str, rate_cal_s: float) -> float:
         """칼로리 적립 속도 → 이동 속도(m/s). Concept2 공식 근사."""

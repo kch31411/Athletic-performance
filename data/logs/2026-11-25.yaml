@@ -1,0 +1,7 @@
+date: 2026-11-25
+sessions:
+  - id: cardio
+    results:
+      - block: 1
+        my_rounds: 5            # "20kg 덤벨 2개로 5세트 진행"
+        loads: {db_push_press: 20, db_front_squat: 20}

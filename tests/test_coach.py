@@ -162,6 +162,19 @@ def test_metcon_result_updates_capacity_and_next_prediction(root):
     assert t1["parts"][1]["pred"]["own_s"] < t0["parts"][1]["pred"]["own_s"]
 
 
+def test_choosing_heavier_loads_than_prescribed_raises_future_prescriptions(root):
+    block = find_day(root, date(2026, 11, 25), "m")["sessions"][2]["blocks"][0]
+    planned = evaluate(build(root, until=date(2026, 11, 25)), block)["loads"]["db_push_press"]
+    write_log(root, "2026-11-25", {"sessions": [{"id": "cardio", "results": [
+        {"block": 1, "my_rounds": 5, "loads": {"db_push_press": planned * 1.4, "db_front_squat": planned * 1.4},
+         "load_feel": "good"}]}]})
+    after = build(root, until=date(2026, 11, 28))
+    assert after.b.value("loadpref") > 0.1
+    sat = find_day(root, date(2026, 11, 28), "m")["sessions"][1]["blocks"][0]
+    before = build(root, until=date(2026, 11, 28), skip_sessions_on=date(2026, 11, 25))
+    assert (evaluate(after, sat)["loads"]["devil_press"] >= evaluate(before, sat)["loads"]["devil_press"])
+
+
 def test_split_suggestion():
     assert suggest_split(21, 0.3) is None
     parts = suggest_split(21, 1.2)

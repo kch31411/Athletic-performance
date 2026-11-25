@@ -5,7 +5,7 @@ import math
 from datetime import date
 
 from . import catalog as C
-from .athlete import Athlete, MAX_PENALTY
+from .athlete import LB, Athlete, MAX_PENALTY
 from .metcon import evaluate
 from .strength import confidence, plan_block
 
@@ -34,13 +34,36 @@ def pct(x: float) -> str:
     return f"{(math.exp(x) - 1) * 100:+.0f}%"
 
 
+_BAR_UNIT = "kg"
+
+
+def set_units(athlete: Athlete) -> None:
+    global _BAR_UNIT
+    _BAR_UNIT = athlete.profile["equipment"]["barbell_unit"]
+
+
+def is_lb(mid: str) -> bool:
+    return _BAR_UNIT == "lb" and C.movement(mid)["implement"] == "barbell"
+
+
+def wnum(mid: str, w: float) -> str:
+    """표시 단위로 바꾼 숫자만."""
+    return f"{round(w / LB / 5) * 5:g}" if is_lb(mid) else kg(w)
+
+
+def wt(mid: str, w: float, both: bool = True) -> str:
+    if is_lb(mid):
+        return f"{wnum(mid, w)}lb" + (f"({w:.0f}kg)" if both else "")
+    return f"{num(w)}kg"
+
+
 def load_text(mid: str, w: float) -> str:
     m = C.movement(mid)
     if m["implement"] == "dumbbell":
         return f"덤벨 한 손 {kg(w)}kg" if m["hands"] == 2 else f"덤벨 {kg(w)}kg"
     if m["implement"] == "kettlebell":
         return f"케틀벨 {kg(w)}kg"
-    return f"{kg(w)}kg"
+    return wt(mid, w)
 
 
 def pace_text(mod: str, speed: float) -> str:
@@ -105,14 +128,14 @@ def strength_lines(plans: list[dict]) -> list[str]:
         if p["mode"] == "load":
             head += f" — **{load_text(p['movement'], p['load'])}**"
             if p["load_lo"] != p["load_hi"]:
-                head += f" (범위 {kg(p['load_lo'])}~{kg(p['load_hi'])})"
+                head += f" (범위 {wnum(p['movement'], p['load_lo'])}~{wnum(p['movement'], p['load_hi'])})"
             head += f" · {rpe}"
-            sub.append(f"추정 1RM {num(p['e1rm'])}kg · 신뢰도 {p['confidence']}"
+            sub.append(f"추정 1RM {wt(p['movement'], p['e1rm'])} · 신뢰도 {p['confidence']}"
                        + (f" · 오늘 피로 −{p['penalty'] * 100:.0f}% 반영" if p["penalty"] >= 0.01 else ""))
             if p.get("warmup"):
-                sub.append("워밍업: " + " → ".join(f"{kg(w)}×{r}" for w, r in p["warmup"]))
+                sub.append("워밍업: " + " → ".join(f"{wnum(p['movement'], w)}×{r}" for w, r in p["warmup"]))
             if p.get("drops"):
-                sub.append("드랍: 마지막 세트 직후 " + " → ".join(f"{kg(w)}kg" for w in p["drops"])
+                sub.append("드랍: 마지막 세트 직후 " + " → ".join(wt(p["movement"], w, False) for w in p["drops"])
                            + " 로 내려 각각 한계 직전까지")
         elif p["mode"] == "weighted":
             head += f" — **중량 +{kg(p['load'])}kg** · {rpe}"
@@ -306,6 +329,7 @@ def metcon_lines(athlete: Athlete, ev: dict) -> list[str]:
 
 # ── 하루 처방서 ──────────────────────────────────────────
 def plan_day(athlete: Athlete, day: dict, only: list[str] | None = None) -> str:
+    set_units(athlete)
     d: date = day["date"]
     prof = athlete.profile
     lvl = next((C.LEVEL_KO[k] for k, v in C.LEVELS.items() if v == prof["level_num"]), f"수준 {prof['level_num']:g}")
@@ -328,7 +352,8 @@ def plan_day(athlete: Athlete, day: dict, only: list[str] | None = None) -> str:
             if b["type"] == "strength":
                 out += strength_lines(plan_block(athlete, b))
                 out.append("")
-                out.append("조절 규칙: 첫 세트가 RPE 6 이하면 +2.5~5kg, 목표보다 RPE가 1 이상 높으면 −5%.")
+                step = "+5~10lb" if _BAR_UNIT == "lb" else "+2.5~5kg"
+                out.append(f"조절 규칙: 첫 세트가 RPE 6 이하면 {step}, 목표보다 RPE가 1 이상 높으면 −5%.")
             else:
                 out += metcon_lines(athlete, evaluate(athlete, b))
         if s["assumptions"]:
@@ -367,6 +392,7 @@ def status_data(athlete: Athlete) -> dict:
 
 
 def status_md(athlete: Athlete) -> str:
+    set_units(athlete)
     b = athlete.b
     as_of = athlete.today.isoformat() if athlete.today else "-"
     out = [f"# 능력치 현황 ({as_of} 기준)", "",
@@ -394,7 +420,7 @@ def status_md(athlete: Athlete) -> str:
             name = f"{C.ko(mid)} (연속 최대 ~{athlete.rmax(mid, today=False):.0f}회)"
             val = f"체중 포함 {one:.0f}kg"
         else:
-            name, val = C.ko(mid), f"{one:.0f}kg"
+            name, val = C.ko(mid), f"{one:.0f}kg" + (f" ({one / LB:.0f}lb)" if is_lb(mid) else "")
         out.append(f"| {name} | {val} | {one * math.exp(-sd):.0f}~{one * math.exp(sd):.0f} "
                    f"| {one / athlete.bw:.2f} | {confidence(sd)} |")
 
@@ -423,6 +449,7 @@ def status_md(athlete: Athlete) -> str:
 
 # ── 리뷰 (예측 vs 실제) ──────────────────────────────────
 def review_md(athlete: Athlete, day: date) -> str:
+    set_units(athlete)
     prefix = day.isoformat()
     events = [e for e in athlete.events if e.get("tag", "").startswith(prefix)]
     out = [f"# {day.month}.{day.day} ({WEEKDAY[day.weekday()]}) 리뷰 — 예측 vs 실제", ""]
@@ -435,7 +462,7 @@ def review_md(athlete: Athlete, day: date) -> str:
         if e["kind"] == "strength":
             st = e["set"]
             rpe = f"RPE {10 - st['rir']:g}" if st["rir"] is not None else ""
-            load = f"{kg(st['load'])}kg × " if st["load"] else ""
+            load = f"{wt(e['movement'], st['load'])} × " if st["load"] else ""
             verdict = "예상대로" if abs(s) < 0.02 else (f"예상보다 {abs(s) * 100:.0f}% {'강함' if s > 0 else '약함'}")
             out.append(f"- `{sid}` **{C.ko(e['movement'])}** {load}{num(st['reps'])}회 {rpe} → {verdict} · "
                        f"추정 1RM {e['e1rm_before']:.1f} → **{e['e1rm_after']:.1f}kg**")
