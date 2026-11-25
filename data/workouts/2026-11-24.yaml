@@ -1,0 +1,51 @@
+date: 2026-11-24
+gym: PERE
+sessions:
+  - id: hyfit
+    title: HY-FIT
+    focus: 등
+    blocks:
+      - type: strength
+        intent: hyfit
+        items:
+          - {movement: seal_row, reps: 8}
+          - superset:
+              - {movement: pull_up, reps: 10}
+              - {movement: barbell_row, reps: 10}
+          - {movement: db_row, reps: 15}
+
+  - id: weight
+    title: WEIGHT
+    focus: 하체 스트렝스
+    notes: ["백스쿼트 메인!!"]
+    blocks:
+      - type: strength
+        intent: strength
+        items:
+          - {movement: hip_thrust, reps: 8}
+          - {movement: back_squat, reps: 3, main: true}
+          - {movement: split_squat, reps: 6, per_side: true}
+
+  - id: cardio
+    title: CARDIO
+    focus: S.E
+    notes: ["가볍게 하면 쉬워요!"]
+    assumptions:
+      - "team of 2 가 번갈아 1라운드씩, 팀 합계 10라운드(각자 5라운드)로 해석"
+      - "1라운드 = 바벨 컴플렉스(3+3+3) → 푸쉬업 → 버피 오버 바 로 해석"
+      - "푸쉬업 20 / 파이크 푸쉬업 15 / HSPU 10 은 수준별 택1"
+    blocks:
+      - type: metcon
+        format: for_time
+        rounds: 10
+        team: {size: 2, style: igyg, rounds_scope: team}
+        intensity: heavy
+        items:
+          - {movement: power_clean, reps: 3}
+          - {movement: hang_power_clean, reps: 3}
+          - {movement: front_squat, reps: 3}
+          - scale:
+              - {movement: push_up, reps: 20}
+              - {movement: pike_push_up, reps: 15}
+              - {movement: hspu, reps: 10}
+          - {movement: burpee_over_bar, reps: 12}

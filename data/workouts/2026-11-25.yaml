@@ -1,0 +1,58 @@
+date: 2026-11-25
+gym: PERE
+sessions:
+  - id: hyfit
+    title: HY-FIT
+    focus: team of 2
+    notes: ["가볍게하면 너무 쉽습니다!"]
+    assumptions: ["i go you go: 한 명씩 번갈아 1라운드, 각자 7라운드로 해석"]
+    blocks:
+      - type: metcon
+        format: for_time
+        rounds: 7
+        team: {size: 2, style: igyg, rounds_scope: each}
+        intensity: heavy
+        items:
+          - {movement: hlr, reps: 10}
+          - {movement: hang_clean, reps: 8}
+          - {movement: burpee_over_bar, reps: 6}
+
+  - id: weight
+    title: WEIGHT
+    focus: 상체 볼륨
+    notes:
+      - "종목하나짜리는 신경써서 가기"
+      - "푸쉬업 씰로우는 빠르게 갯수만 채운다는 느낌"
+    blocks:
+      - type: strength
+        intent: volume
+        items:
+          - {movement: bench_press, reps: 10}
+          - {movement: barbell_row, reps: 12}
+          - superset:
+              - {movement: push_up, reps: 15, rpe: 7}
+              - {movement: seal_row, reps: 12, rpe: 7}
+
+  - id: cardio
+    title: CARDIO
+    focus: sweat
+    notes: ["p2가 기준입니다!!!!"]
+    assumptions:
+      - "3명이 머신 → 동작 → 휴식 순으로 교대, p2(동작)가 1라운드를 끝내면 로테이션"
+      - "push press / squat 는 덤벨로 수행한다고 가정 (burpee over the DB)"
+    blocks:
+      - type: metcon
+        format: rotation
+        duration_min: 30
+        team: {size: 3, style: rotation}
+        intensity: moderate
+        stations:
+          - role: machine
+            items: [{movement: machine, max: true}]
+          - role: work
+            pacer: true
+            items:
+              - {movement: db_push_press, reps: 12}
+              - {movement: db_front_squat, reps: 12}
+              - {movement: burpee_over_db, reps: 12}
+          - role: rest

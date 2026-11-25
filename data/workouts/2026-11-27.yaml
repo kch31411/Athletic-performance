@@ -1,0 +1,79 @@
+date: 2026-11-27
+gym: PERE
+sessions:
+  - id: hyfit
+    title: HY-FIT
+    focus: EMOM
+    notes:
+      - "2라운드 마다 갯수가 하나씩 올라갑니다"
+      - "8개로 시작해서 12개로 끝나게 될겁니다"
+    assumptions: ["machine 8 은 8cal 로 해석"]
+    blocks:
+      - type: metcon
+        format: emom
+        interval_s: 60
+        rounds: 10
+        progression: {every_rounds: 2, add: 1}
+        intensity: moderate
+        items:
+          - {movement: burpee, reps: 8}
+          - {movement: machine, cal: 8}
+          - {movement: db_snatch, reps: 8}
+
+  - id: hyrox_strength
+    title: HYROX
+    focus: HYROX STRENGTH & POWER
+    notes: ["40분짜리 운동입니다!"]
+    assumptions:
+      - "섹션마다 2:30 운동 / 2:30 휴식 × 2라운드"
+      - "thruster·devil press 무게(3/6kg, 4/8kg)는 덤벨 한 손 기준으로 해석"
+      - "BB burpee 는 버피 오버 더 바 로 해석"
+    blocks:
+      - type: metcon
+        format: interval
+        work_s: 150
+        rest_s: 150
+        rounds: 2
+        intensity: moderate
+        sections:
+          - name: section 1
+            items:
+              - {movement: burpee_over_bar, reps: 15}
+              - {movement: ski, max: true}
+          - name: section 2
+            items:
+              - {movement: db_thruster, max: true, load_kg: {f: 3, m: 6}}
+          - name: section 3
+            items:
+              - choice:
+                  - {movement: bike_erg, seconds: 30}
+                  - {movement: assault_bike, seconds: 30}
+              - {movement: devil_press, max: true, load_kg: {f: 4, m: 8}}
+          - name: section 4
+            items:
+              - {movement: run, seconds: 30}
+              - {movement: box_jump, max: true}
+
+  - id: hyrox_engine
+    title: HYROX
+    focus: HYROX ENGINE
+    notes: ["들어오려고 계속 노력하기"]
+    assumptions:
+      - "2분마다 스테이션 이동, 6스테이션 × 3바퀴 = 36분"
+      - "thruster 40 은 가벼운 덤벨(3/6kg)로 가정"
+    blocks:
+      - type: metcon
+        format: emom
+        interval_s: 120
+        rounds: 3
+        intensity: moderate
+        items:
+          - {movement: kb_box_step_up, reps: 20}
+          - {movement: db_thruster, reps: 40, load_kg: {f: 3, m: 6}}
+          - {movement: ski, cal: {f: 24, m: 30}}
+          - {movement: burpee, reps: {f: 24, m: 30}}
+          - {movement: row, cal: {f: 24, m: 30}}
+          - choice:
+              - {movement: run, cal: {f: 20, m: 24}}
+              - {movement: bike_erg, cal: {f: 24, m: 30}}
+              - {movement: assault_bike, cal: {f: 24, m: 30}}

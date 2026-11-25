@@ -1,0 +1,44 @@
+date: 2026-11-28
+gym: PERE
+sessions:
+  - id: weight
+    title: WEIGHT
+    focus: 전신
+    notes: ["상체위주로 등 가슴!!"]
+    blocks:
+      - type: strength
+        intent: volume
+        items:
+          - superset:
+              - {movement: pull_up, reps: 8}
+              - {movement: push_up, reps: 12}
+          - {movement: bench_press, reps: 12, drop: true}
+          - superset:
+              - {movement: barbell_row, reps: 8}
+              - {movement: seal_row, reps: 8}
+
+  - id: cardio
+    title: CARDIO
+    focus: Sweat
+    notes: ["와드가 2개..."]
+    assumptions:
+      - "team of 2: 섹션당 5라운드를 두 사람이 횟수를 나눠서 수행(절반씩)으로 해석"
+      - "섹션마다 타임캡 15분"
+    blocks:
+      - type: metcon
+        format: for_time
+        rounds: 5
+        time_cap_min: 15
+        team: {size: 2, style: split}
+        intensity: moderate
+        sections:
+          - name: section 1
+            items:
+              - {movement: burpee_over_bar, reps: 10}
+              - {movement: machine, cal: {f: 12, m: 15}}
+              - {movement: clean_and_jerk, reps: 5}
+          - name: section 2
+            items:
+              - {movement: devil_press, reps: 8}
+              - {movement: db_box_step_over, reps: 12}
+              - {movement: box_jump_over, reps: 16}

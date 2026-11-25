@@ -1,0 +1,44 @@
+date: 2026-11-26
+gym: PERE
+sessions:
+  - id: hyfit
+    title: HY-FIT
+    focus: 다리
+    assumptions: ["워킹 런지는 횟수 미지정 → 덤벨 들고 12걸음 기준으로 무게 산정"]
+    blocks:
+      - type: strength
+        intent: hyfit
+        items:
+          - {movement: heel_up_squat, reps: 10}
+          - superset:
+              - {movement: back_squat, reps: 8}
+              - {movement: jump_squat, reps: 12}
+          - {movement: walking_lunge}
+
+  - id: weight
+    title: WEIGHT
+    focus: 상체 스트렝스
+    notes: ["벤치가 메인이에요!"]
+    blocks:
+      - type: strength
+        intent: strength
+        items:
+          - {movement: db_pullover, reps: 12}
+          - {movement: bench_press, reps: [3, 5], main: true}
+          - {movement: incline_db_press, reps: 12}
+
+  - id: cardio
+    title: CARDIO
+    focus: S.E
+    notes: ["천천히 ... 빠르게 ...?"]
+    assumptions: ["심판//선수: 한 명이 수행하는 동안 파트너는 심판 → 개인 기록으로 해석"]
+    blocks:
+      - type: metcon
+        format: for_time
+        rep_scheme: [21, 15, 9]
+        time_cap_min: 15
+        intensity: heavy
+        items:
+          - {movement: hang_clean_and_jerk}
+          - {movement: front_squat}
+          - {movement: pull_up}

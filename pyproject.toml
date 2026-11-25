@@ -1,0 +1,12 @@
+[project]
+name = "athletic-performance-coach"
+version = "0.1.0"
+description = "능력치 모델 기반 개인 맞춤 훈련 처방 엔진"
+requires-python = ">=3.11"
+dependencies = ["numpy", "pyyaml"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
