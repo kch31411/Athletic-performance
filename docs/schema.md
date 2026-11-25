@@ -102,10 +102,11 @@ sessions:
         rpe: 9
         load_feel: good        # light | good | heavy → 다음 메트콘 무게 기조에 반영
       # amrap:    rounds: 6, reps: 12
-      # rotation: team_rounds: 17
+      # rotation: my_rounds: 5 (내가 동작 스테이션을 돈 횟수) 또는 team_rounds: 15
       # 섹션이 여러 개면: sections: [{time: "11:20"}, {time: "12:05"}]
       # 머신 구간 기록:   ergs: [{erg: row, cal: 15, seconds: 50, effort: max}]
       - {erg: row, cal: 18, seconds: 60}                  # 단독 머신 테스트. effort: max(기본) | hard
+      - {erg: run, distance_m: 5000, time: "24:30"}       # 러닝·로잉은 거리+시간도 가능
 ```
 
 RPE(운동자각도): 10 = 한 개도 더 못 함, 9 = 1개 더 가능, 8 = 2개 더 가능, 7 = 3개 더 가능.
@@ -113,4 +114,4 @@ RPE(운동자각도): 10 = 한 개도 더 못 함, 9 = 1개 더 가능, 8 = 2개
 ## 3. 프로필 — `data/athlete/profile.yaml`
 
 `sex`, `bodyweight_kg`, `level`(beginner|novice|intermediate|advanced 또는 0~3 숫자),
-`preferred_machine`, `equipment`(바벨·덤벨·케틀벨 단위), `benchmarks`(알고 있는 기록 — 위 results 와 같은 형식 + `date`).
+`preferred_machine`, `equipment`(`barbell_unit: kg|lb`, 덤벨·케틀벨 목록), `benchmarks`(알고 있는 기록 — 위 results 와 같은 형식 + `date`).

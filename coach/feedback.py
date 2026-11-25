@@ -126,8 +126,12 @@ def apply_erg(athlete: Athlete, res: dict, tag: str = "") -> dict | None:
     mid = {"bike": "bike_erg", "assault": "assault_bike"}.get(mid, mid)
     mod = athlete.erg_mod(mid)
     t = parse_time(res["time"]) if res.get("time") is not None else float(res["seconds"])
+    run_ratio = None
     if res.get("cal") is not None:
         rate = float(res["cal"]) / t
+    elif res.get("distance_m") is not None and mod == "run":
+        run_ratio = float(res["distance_m"]) / t / athlete.run_speed(t)
+        rate = athlete.erg_rate("run", t) * run_ratio ** (1.0 / 0.6)
     elif res.get("distance_m") is not None and mod in ("row", "ski", "bike", "assault"):
         dist = float(res["distance_m"]) / (2.0 if mod in ("bike", "assault") else 1.0)
         watts = 2.8 / (t / dist) ** 3
@@ -141,6 +145,9 @@ def apply_erg(athlete: Athlete, res: dict, tag: str = "") -> dict | None:
         noise = 0.08
     pred = athlete.erg_rate(mod, t)
     resid = math.log(rate / pred)
+    if run_ratio is not None:                      # 러닝은 속도 비 자체를 엔진 관측으로 쓴다
+        resid = math.log(run_ratio / (0.93 if effort != "max" else 1.0))
+        noise += 0.02
     a = athlete.ana_sec() / max(t, 15.0)
     h = dict(athlete.erg_h(mod))
     h["cond"] = 1.0
@@ -195,19 +202,28 @@ def _apply_one_metcon(athlete: Athlete, block: dict, res: dict, tag: str) -> dic
         eq, noise = _rpe_adjust(1.0 / max(actual, 0.1), rpe, noise)
         _observe_time(athlete, ev, math.log(eq * pred), noise, tag,
                       {"format": fmt, "pred_rounds": pred, "actual_rounds": actual})
-    elif fmt == "rotation" and res.get("team_rounds") is not None:
+    elif fmt == "rotation" and (res.get("team_rounds") is not None or res.get("my_rounds") is not None):
         pred = ev["pred"]["team_rounds"]
-        actual = float(res["team_rounds"])
+        actual = (float(res["team_rounds"]) if res.get("team_rounds") is not None
+                  else float(res["my_rounds"]) * block["team"]["size"])
         eq, noise = _rpe_adjust(1.0 / max(actual, 0.1), rpe, noise)
         _observe_time(athlete, ev, math.log(eq * pred), noise, tag,
                       {"format": fmt, "pred_rounds": pred, "actual_rounds": actual})
     for erg in res.get("ergs") or []:
         apply_erg(athlete, erg, tag)
     feel = res.get("load_feel")
-    if feel:
-        if feel not in ("light", "good", "heavy"):
-            raise LogError(f"load_feel 은 light/good/heavy: {feel}")
-        athlete.b.observe({"loadpref": 1.0}, {"light": 0.06, "good": 0.0, "heavy": -0.06}[feel], 0.10)
+    if feel and feel not in ("light", "good", "heavy"):
+        raise LogError(f"load_feel 은 light/good/heavy: {feel}")
+    # 무게 선호 학습: 처방보다 무겁게/가볍게 들었는지 + 그 무게가 어땠는지
+    chosen = 0.0
+    if res.get("loads"):
+        planned = evaluate(athlete, block, picks=res.get("picks"))["loads"]
+        ratios = [math.log(w / planned[m]) for m, w in res["loads"].items()
+                  if planned.get(m) and w > 0 and C.movement(m)["implement"] != "bodyweight"]
+        chosen = sum(ratios) / len(ratios) if ratios else 0.0
+    if feel or chosen:
+        shift = chosen + {"light": 0.06, "good": 0.0, "heavy": -0.06, None: 0.0}[feel]
+        athlete.b.observe({"loadpref": 1.0}, shift, 0.10 if feel else 0.20)
     athlete.add_fatigue(ev["stress"])
     return ev
 

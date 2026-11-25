@@ -1,10 +1,15 @@
 # 선수 프로필 — 모델의 출발점(사전 지식). 기록이 쌓이면 여기 값보다 기록이 우선한다.
-sex: m                    # m | f
-bodyweight_kg: 78
-level: novice             # beginner | novice | intermediate | advanced (또는 0~3 사이 숫자)
-preferred_machine: row    # 'machine' 으로 적힌 종목에서 주로 타는 머신
-# 알고 있는 기록 (있으면 초기 추정이 훨씬 정확해진다)
-benchmarks: []
-#  - {date: 2026-11-01, movement: bench_press, load: 70, reps: 5, rpe: 9}
-#  - {date: 2026-11-01, movement: pull_up, reps: 8, rpe: 10}
-#  - {date: 2026-11-01, erg: row, cal: 20, seconds: 60}
+sex: m
+bodyweight_kg: 69
+level: intermediate       # beginner | novice | intermediate | advanced (또는 0~3 사이 숫자)
+preferred_machine: row    # 'machine' 으로 적힌 종목에서 주로 타는 머신 (미확인 — 기본값)
+equipment:
+  barbell_unit: lb        # PB 를 파운드로 기록 → 바벨 처방도 lb(5lb 단위)로 표시
+# 알고 있는 기록 (2026-11-25 본인 제공 PB. 날짜 미상이라 첫 기록 1주 전 시점으로 반영)
+benchmarks:
+  - {movement: back_squat, load: 102.1, reps: 3, rpe: 10, note: "225lb x3"}
+  - {movement: front_squat, load: 74.8, reps: 6, rpe: 10, note: "165lb x6"}
+  - {movement: deadlift, load: 102.1, reps: 5, rpe: 10, note: "225lb x5"}
+  - {movement: strict_press, load: 49.9, reps: 3, rpe: 10, note: "110lb x3"}
+  - {movement: bench_press, load: 70.3, reps: 3, rpe: 10, note: "155lb x3"}
+  - {erg: run, distance_m: 21097.5, time: "1:52:00", note: "하프마라톤"}

@@ -1,4 +1,5 @@
 # 동작 카탈로그
+#   aliases   : 검색용 별칭 (find_movement 가 정규화해서 대조)
 #   implement : barbell | dumbbell | kettlebell | bodyweight | machine | erg | other
 #   pattern   : squat | hinge | lunge | push_h | push_v | pull_h | pull_v | olympic | core | plyo
 #   cat       : W(웨이트) | G(맨몸/체조) | M(단일구조 유산소)
@@ -9,87 +10,87 @@
 #   fatigue   : 패턴별 국소 피로 기여도 (생략 시 {pattern: 1})
 
 # ── 스쿼트 ────────────────────────────────────────────────
-back_squat:      {ko: 백스쿼트, implement: barbell, pattern: squat, cat: W, ref: back_squat, ratio: 1.0, cycle_s: 3.0}
-front_squat:     {ko: 프론트 스쿼트, implement: barbell, pattern: squat, cat: W, ref: back_squat, ratio: 0.85, cycle_s: 2.6}
-heel_up_squat:   {ko: 힐업 스쿼트, implement: barbell, pattern: squat, cat: W, ref: back_squat, ratio: 0.85, cycle_s: 3.0}
-goblet_squat:    {ko: 고블릿 스쿼트, implement: dumbbell, hands: 1, pattern: squat, cat: W, ref: back_squat, ratio: 0.40, cycle_s: 2.2}
-db_front_squat:  {ko: 덤벨 스쿼트, implement: dumbbell, pattern: squat, cat: W, ref: back_squat, ratio: 0.28, cycle_s: 2.0}
-air_squat:       {ko: 에어 스쿼트, implement: bodyweight, pattern: squat, cat: G, unbroken: 70, cycle_s: 1.3}
-jump_squat:      {ko: 점프 스쿼트, implement: bodyweight, pattern: squat, cat: G, unbroken: 40, cycle_s: 1.4, fatigue: {squat: 0.6, plyo: 0.6}}
-thruster:        {ko: 쓰러스터, implement: barbell, pattern: squat, cat: W, ref: back_squat, ratio: 0.62, cycle_s: 2.6, fatigue: {squat: 0.8, push_v: 0.6}}
-db_thruster:     {ko: 덤벨 쓰러스터, implement: dumbbell, pattern: squat, cat: W, ref: back_squat, ratio: 0.26, cycle_s: 2.5, fatigue: {squat: 0.8, push_v: 0.6}}
-db_hang_cluster: {ko: 덤벨 행 클러스터, implement: dumbbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.36, cycle_s: 3.5, fatigue: {olympic: 0.7, squat: 0.7, push_v: 0.5}}
-wall_ball:       {ko: 월볼, implement: other, pattern: squat, cat: W, unbroken: 40, cycle_s: 2.0, fatigue: {squat: 0.6, push_v: 0.4}}
+back_squat:      {ko: 백스쿼트, aliases: ["back squat", "squat", "스쿼트", "백 스쿼트", "BS"], implement: barbell, pattern: squat, cat: W, ref: back_squat, ratio: 1.0, cycle_s: 3.0}
+front_squat:     {ko: 프론트 스쿼트, aliases: ["front squat", "프론트스쿼트", "FS"], implement: barbell, pattern: squat, cat: W, ref: back_squat, ratio: 0.85, cycle_s: 2.6}
+heel_up_squat:   {ko: 힐업 스쿼트, aliases: ["heel up squat", "heel elevated squat", "힐업스쿼트", "힐 엘리베이티드 스쿼트"], implement: barbell, pattern: squat, cat: W, ref: back_squat, ratio: 0.85, cycle_s: 3.0}
+goblet_squat:    {ko: 고블릿 스쿼트, aliases: ["goblet squat", "고블렛 스쿼트"], implement: dumbbell, hands: 1, pattern: squat, cat: W, ref: back_squat, ratio: 0.40, cycle_s: 2.2}
+db_front_squat:  {ko: 덤벨 스쿼트, aliases: ["db squat", "dumbbell squat", "dumbbell front squat", "덤벨 프론트 스쿼트"], implement: dumbbell, pattern: squat, cat: W, ref: back_squat, ratio: 0.28, cycle_s: 2.0}
+air_squat:       {ko: 에어 스쿼트, aliases: ["air squat", "맨몸 스쿼트"], implement: bodyweight, pattern: squat, cat: G, unbroken: 70, cycle_s: 1.3}
+jump_squat:      {ko: 점프 스쿼트, aliases: ["jump squat", "squat jump", "점프스쿼트"], implement: bodyweight, pattern: squat, cat: G, unbroken: 40, cycle_s: 1.4, fatigue: {squat: 0.6, plyo: 0.6}}
+thruster:        {ko: 쓰러스터, aliases: ["thruster", "barbell thruster", "바벨 쓰러스터", "스러스터"], implement: barbell, pattern: squat, cat: W, ref: back_squat, ratio: 0.62, cycle_s: 2.6, fatigue: {squat: 0.8, push_v: 0.6}}
+db_thruster:     {ko: 덤벨 쓰러스터, aliases: ["db thruster", "dumbbell thruster", "덤벨 스러스터"], implement: dumbbell, pattern: squat, cat: W, ref: back_squat, ratio: 0.26, cycle_s: 2.5, fatigue: {squat: 0.8, push_v: 0.6}}
+db_hang_cluster: {ko: 덤벨 행 클러스터, aliases: ["db hang cluster", "dumbbell hang cluster", "DB 행 클러스터", "hang cluster"], implement: dumbbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.36, cycle_s: 3.5, fatigue: {olympic: 0.7, squat: 0.7, push_v: 0.5}}
+wall_ball:       {ko: 월볼, aliases: ["wall ball", "wall ball shot", "월볼샷"], implement: other, pattern: squat, cat: W, unbroken: 40, cycle_s: 2.0, fatigue: {squat: 0.6, push_v: 0.4}}
 
 # ── 런지 / 편측 하체 ─────────────────────────────────────
-split_squat:        {ko: 스플릿 스쿼트, implement: dumbbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 2.6}
-barbell_back_lunge: {ko: 바벨 백런지, implement: barbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.60, cycle_s: 2.5}
-side_lunge:         {ko: 사이드 런지, implement: dumbbell, hands: 1, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 2.6}
-walking_lunge:      {ko: 워킹 런지, implement: dumbbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 1.5}
-db_box_step_up:     {ko: 덤벨 박스 스텝업, implement: dumbbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 2.5}
-db_box_step_over:   {ko: 덤벨 박스 스텝오버, implement: dumbbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 3.0}
-kb_box_step_up:     {ko: 케틀벨 박스 스텝업, implement: kettlebell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 2.5}
-sandbag_lunge:      {ko: 샌드백 런지, implement: other, pattern: lunge, cat: W, speed_mps: 0.7}
+split_squat:        {ko: 스플릿 스쿼트, aliases: ["split squat", "bulgarian split squat", "불가리안 스플릿 스쿼트"], implement: dumbbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 2.6}
+barbell_back_lunge: {ko: 바벨 백런지, aliases: ["barbell back lunge", "reverse lunge", "back lunge", "백런지", "리버스 런지"], implement: barbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.60, cycle_s: 2.5}
+side_lunge:         {ko: 사이드 런지, aliases: ["side lunge", "lateral lunge", "사이드런지", "래터럴 런지"], implement: dumbbell, hands: 1, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 2.6}
+walking_lunge:      {ko: 워킹 런지, aliases: ["walking lunge", "lunge", "워킹런지", "런지"], implement: dumbbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 1.5}
+db_box_step_up:     {ko: 덤벨 박스 스텝업, aliases: ["db box step up", "dumbbell box step up", "box step up", "박스 스텝업"], implement: dumbbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 2.5}
+db_box_step_over:   {ko: 덤벨 박스 스텝오버, aliases: ["db box step over", "dumbbell box step over", "box step over", "박스 스텝오버"], implement: dumbbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 3.0}
+kb_box_step_up:     {ko: 케틀벨 박스 스텝업, aliases: ["kb box step up", "kettlebell box step up"], implement: kettlebell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 2.5}
+sandbag_lunge:      {ko: 샌드백 런지, aliases: ["sandbag lunge", "sandbag walking lunge"], implement: other, pattern: lunge, cat: W, speed_mps: 0.7}
 
 # ── 힌지 ──────────────────────────────────────────────────
-deadlift:        {ko: 데드리프트, implement: barbell, pattern: hinge, cat: W, ref: deadlift, ratio: 1.0, cycle_s: 2.5}
-hip_thrust:      {ko: 힙쓰러스트, implement: barbell, pattern: hinge, cat: W, ref: deadlift, ratio: 1.05, cycle_s: 2.6}
-leg_curl:        {ko: 레그컬, implement: machine, pattern: hinge, cat: W, ref: deadlift, ratio: 0.35, cycle_s: 2.6}
-kb_swing:        {ko: 케틀벨 스윙, implement: kettlebell, pattern: hinge, cat: W, ref: deadlift, ratio: 0.33, cycle_s: 1.8}
-kb_swing_squat:  {ko: 케틀벨 스윙 스쿼트, implement: kettlebell, pattern: hinge, cat: W, ref: deadlift, ratio: 0.30, cycle_s: 3.2, fatigue: {hinge: 0.8, squat: 0.7}}
+deadlift:        {ko: 데드리프트, aliases: ["deadlift", "DL", "데드", "데드 리프트"], implement: barbell, pattern: hinge, cat: W, ref: deadlift, ratio: 1.0, cycle_s: 2.5}
+hip_thrust:      {ko: 힙쓰러스트, aliases: ["hip thrust", "힙 쓰러스트", "힙스러스트"], implement: barbell, pattern: hinge, cat: W, ref: deadlift, ratio: 1.05, cycle_s: 2.6}
+leg_curl:        {ko: 레그컬, aliases: ["leg curl", "hamstring curl", "레그 컬"], implement: machine, pattern: hinge, cat: W, ref: deadlift, ratio: 0.35, cycle_s: 2.6}
+kb_swing:        {ko: 케틀벨 스윙, aliases: ["kb swing", "kettlebell swing", "kb 스윙", "스윙"], implement: kettlebell, pattern: hinge, cat: W, ref: deadlift, ratio: 0.33, cycle_s: 1.8}
+kb_swing_squat:  {ko: 케틀벨 스윙 스쿼트, aliases: ["kb swing squat", "kettlebell swing squat", "kb 스윙 스쿼트", "스윙 스쿼트"], implement: kettlebell, pattern: hinge, cat: W, ref: deadlift, ratio: 0.30, cycle_s: 3.2, fatigue: {hinge: 0.8, squat: 0.7}}
 
 # ── 수평 밀기 ─────────────────────────────────────────────
-bench_press:      {ko: 벤치프레스, implement: barbell, pattern: push_h, cat: W, ref: bench_press, ratio: 1.0, cycle_s: 2.5}
-incline_db_press: {ko: 인클라인 덤벨프레스, implement: dumbbell, pattern: push_h, cat: W, ref: bench_press, ratio: 0.40, cycle_s: 2.6, fatigue: {push_h: 1.0, push_v: 0.3}}
-db_pullover:      {ko: 덤벨 풀오버, implement: dumbbell, hands: 1, pattern: push_h, cat: W, ref: bench_press, ratio: 0.40, cycle_s: 3.0, fatigue: {push_h: 0.5, pull_v: 0.5}}
-push_up:          {ko: 푸쉬업, implement: bodyweight, pattern: push_h, cat: G, ref: bench_press, ratio: 1.30, bw_frac: 0.65, cycle_s: 1.2}
+bench_press:      {ko: 벤치프레스, aliases: ["bench press", "bench", "벤치", "벤치 프레스", "BP"], implement: barbell, pattern: push_h, cat: W, ref: bench_press, ratio: 1.0, cycle_s: 2.5}
+incline_db_press: {ko: 인클라인 덤벨프레스, aliases: ["incline db press", "incline dumbbell press", "인클라인 덤벨 프레스"], implement: dumbbell, pattern: push_h, cat: W, ref: bench_press, ratio: 0.40, cycle_s: 2.6, fatigue: {push_h: 1.0, push_v: 0.3}}
+db_pullover:      {ko: 덤벨 풀오버, aliases: ["db pullover", "dumbbell pullover", "pullover", "풀오버"], implement: dumbbell, hands: 1, pattern: push_h, cat: W, ref: bench_press, ratio: 0.40, cycle_s: 3.0, fatigue: {push_h: 0.5, pull_v: 0.5}}
+push_up:          {ko: 푸쉬업, aliases: ["push up", "pushup", "푸시업", "푸쉬 업", "팔굽혀펴기"], implement: bodyweight, pattern: push_h, cat: G, ref: bench_press, ratio: 1.30, bw_frac: 0.65, cycle_s: 1.2}
 
 # ── 수직 밀기 ─────────────────────────────────────────────
-strict_press:   {ko: 스트릭트 프레스, implement: barbell, pattern: push_v, cat: W, ref: strict_press, ratio: 1.0, cycle_s: 2.5}
-push_press:     {ko: 푸쉬프레스, implement: barbell, pattern: push_v, cat: W, ref: strict_press, ratio: 1.30, cycle_s: 2.0}
-db_push_press:  {ko: 덤벨 푸쉬프레스, implement: dumbbell, pattern: push_v, cat: W, ref: strict_press, ratio: 0.55, cycle_s: 2.0}
-pike_push_up:   {ko: 파이크 푸쉬업, implement: bodyweight, pattern: push_v, cat: G, ref: strict_press, ratio: 1.50, bw_frac: 0.70, cycle_s: 1.8}
-hspu:           {ko: 핸드스탠드 푸쉬업, implement: bodyweight, pattern: push_v, cat: G, ref: strict_press, ratio: 1.50, bw_frac: 1.0, cycle_s: 2.5}
+strict_press:   {ko: 스트릭트 프레스, aliases: ["strict press", "overhead press", "OHP", "shoulder press", "오버헤드 프레스", "숄더 프레스"], implement: barbell, pattern: push_v, cat: W, ref: strict_press, ratio: 1.0, cycle_s: 2.5}
+push_press:     {ko: 푸쉬프레스, aliases: ["push press", "barbell push press", "푸시프레스", "푸쉬 프레스"], implement: barbell, pattern: push_v, cat: W, ref: strict_press, ratio: 1.30, cycle_s: 2.0}
+db_push_press:  {ko: 덤벨 푸쉬프레스, aliases: ["db push press", "dumbbell push press", "덤벨 푸시프레스"], implement: dumbbell, pattern: push_v, cat: W, ref: strict_press, ratio: 0.55, cycle_s: 2.0}
+pike_push_up:   {ko: 파이크 푸쉬업, aliases: ["pike push up", "spike push up", "스파이크 푸쉬업", "파이크 푸시업"], implement: bodyweight, pattern: push_v, cat: G, ref: strict_press, ratio: 1.50, bw_frac: 0.70, cycle_s: 1.8}
+hspu:           {ko: 핸드스탠드 푸쉬업, aliases: ["hspu", "handstand push up", "HS push up", "핸드스탠드 푸시업", "물구나무 푸쉬업"], implement: bodyweight, pattern: push_v, cat: G, ref: strict_press, ratio: 1.50, bw_frac: 1.0, cycle_s: 2.5}
 
 # ── 수평 당기기 ───────────────────────────────────────────
-barbell_row:  {ko: 바벨로우, implement: barbell, pattern: pull_h, cat: W, ref: barbell_row, ratio: 1.0, cycle_s: 2.2, fatigue: {pull_h: 1.0, hinge: 0.3}}
-seal_row:     {ko: 씰로우, implement: barbell, pattern: pull_h, cat: W, ref: barbell_row, ratio: 0.85, cycle_s: 2.2}
-db_row:       {ko: 덤벨로우, implement: dumbbell, hands: 1, pattern: pull_h, cat: W, ref: barbell_row, ratio: 0.55, cycle_s: 2.2}
+barbell_row:  {ko: 바벨로우, aliases: ["barbell row", "BB row", "bent over row", "바벨 로우", "벤트오버 로우"], implement: barbell, pattern: pull_h, cat: W, ref: barbell_row, ratio: 1.0, cycle_s: 2.2, fatigue: {pull_h: 1.0, hinge: 0.3}}
+seal_row:     {ko: 씰로우, aliases: ["seal row", "씰 로우", "실로우"], implement: barbell, pattern: pull_h, cat: W, ref: barbell_row, ratio: 0.85, cycle_s: 2.2}
+db_row:       {ko: 덤벨로우, aliases: ["db row", "dumbbell row", "one arm row", "덤벨 로우", "원암 로우"], implement: dumbbell, hands: 1, pattern: pull_h, cat: W, ref: barbell_row, ratio: 0.55, cycle_s: 2.2}
 
 # ── 수직 당기기 ───────────────────────────────────────────
-pull_up:      {ko: 풀업, implement: bodyweight, pattern: pull_v, cat: G, ref: pull_up, ratio: 1.0, bw_frac: 1.0, weightable: true, cycle_s: 1.6}
+pull_up:      {ko: 풀업, aliases: ["pull up", "pullup", "chin up", "턱걸이", "풀 업"], implement: bodyweight, pattern: pull_v, cat: G, ref: pull_up, ratio: 1.0, bw_frac: 1.0, weightable: true, cycle_s: 1.6}
 
 # ── 올림픽 리프팅 / 파워 ─────────────────────────────────
-clean_and_jerk:      {ko: 클린 앤 저크, implement: barbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 1.0, cycle_s: 4.5, fatigue: {olympic: 1.0, squat: 0.4, hinge: 0.4, push_v: 0.4}}
-hang_clean_and_jerk: {ko: 행 클린 앤 저크, implement: barbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.92, cycle_s: 4.0, fatigue: {olympic: 1.0, squat: 0.3, hinge: 0.3, push_v: 0.4}}
-power_clean:         {ko: 파워 클린, implement: barbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.90, cycle_s: 3.0, fatigue: {olympic: 1.0, hinge: 0.4}}
-hang_power_clean:    {ko: 행 파워 클린, implement: barbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.85, cycle_s: 2.5, fatigue: {olympic: 1.0, hinge: 0.3}}
-hang_clean:          {ko: 행 클린, implement: barbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.92, cycle_s: 3.0, fatigue: {olympic: 1.0, squat: 0.3, hinge: 0.3}}
-db_snatch:           {ko: 덤벨 스내치, implement: dumbbell, hands: 1, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.50, cycle_s: 2.2, fatigue: {olympic: 0.7, hinge: 0.3, push_v: 0.2}}
-devil_press:         {ko: 데빌 프레스, implement: dumbbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.38, cycle_s: 6.0, fatigue: {olympic: 0.6, push_h: 0.3, hinge: 0.4, plyo: 0.5}}
-kb_head_cutter:      {ko: 헤드 커터, implement: kettlebell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.33, cycle_s: 4.0, fatigue: {olympic: 0.5, squat: 0.5, push_v: 0.4}}
+clean_and_jerk:      {ko: 클린 앤 저크, aliases: ["clean and jerk", "clean & jerk", "C&J", "클린앤저크", "용상"], implement: barbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 1.0, cycle_s: 4.5, fatigue: {olympic: 1.0, squat: 0.4, hinge: 0.4, push_v: 0.4}}
+hang_clean_and_jerk: {ko: 행 클린 앤 저크, aliases: ["hang clean and jerk", "hang clean & jerk", "행 클린앤저크", "hang C&J"], implement: barbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.92, cycle_s: 4.0, fatigue: {olympic: 1.0, squat: 0.3, hinge: 0.3, push_v: 0.4}}
+power_clean:         {ko: 파워 클린, aliases: ["power clean", "파워클린"], implement: barbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.90, cycle_s: 3.0, fatigue: {olympic: 1.0, hinge: 0.4}}
+hang_power_clean:    {ko: 행 파워 클린, aliases: ["hang power clean", "행 파워클린", "HPC"], implement: barbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.85, cycle_s: 2.5, fatigue: {olympic: 1.0, hinge: 0.3}}
+hang_clean:          {ko: 행 클린, aliases: ["hang clean", "hang squat clean", "행클린"], implement: barbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.92, cycle_s: 3.0, fatigue: {olympic: 1.0, squat: 0.3, hinge: 0.3}}
+db_snatch:           {ko: 덤벨 스내치, aliases: ["db snatch", "dumbbell snatch", "덤벨스내치"], implement: dumbbell, hands: 1, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.50, cycle_s: 2.2, fatigue: {olympic: 0.7, hinge: 0.3, push_v: 0.2}}
+devil_press:         {ko: 데빌 프레스, aliases: ["devil press", "devils press", "데빌프레스"], implement: dumbbell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.38, cycle_s: 6.0, fatigue: {olympic: 0.6, push_h: 0.3, hinge: 0.4, plyo: 0.5}}
+kb_head_cutter:      {ko: 헤드 커터, aliases: ["head cutter", "kb head cutter", "헤드커터"], implement: kettlebell, pattern: olympic, cat: W, ref: clean_and_jerk, ratio: 0.33, cycle_s: 4.0, fatigue: {olympic: 0.5, squat: 0.5, push_v: 0.4}}
 
 # ── 코어 ──────────────────────────────────────────────────
-hlr:          {ko: 행잉 레그레이즈, implement: bodyweight, pattern: core, cat: G, unbroken: 15, cycle_s: 2.2, fatigue: {core: 1.0, pull_v: 0.2}}
-abmat_situp:  {ko: 앱매트 싯업, implement: bodyweight, pattern: core, cat: G, unbroken: 50, cycle_s: 2.0}
+hlr:          {ko: 행잉 레그레이즈, aliases: ["hlr", "hanging leg raise", "행잉 레그 레이즈", "레그레이즈"], implement: bodyweight, pattern: core, cat: G, unbroken: 15, cycle_s: 2.2, fatigue: {core: 1.0, pull_v: 0.2}}
+abmat_situp:  {ko: 앱매트 싯업, aliases: ["ab sit up", "abmat sit up", "sit up", "싯업", "윗몸일으키기"], implement: bodyweight, pattern: core, cat: G, unbroken: 50, cycle_s: 2.0}
 
 # ── 플라이오 / 버피 ──────────────────────────────────────
-burpee:           {ko: 버피, implement: bodyweight, pattern: plyo, cat: G, unbroken: 45, cycle_s: 3.6, fatigue: {plyo: 1.0, push_h: 0.3, squat: 0.2}}
-burpee_over_bar:  {ko: 버피 오버 더 바, implement: bodyweight, pattern: plyo, cat: G, unbroken: 40, cycle_s: 4.5, fatigue: {plyo: 1.0, push_h: 0.3, squat: 0.2}}
-burpee_over_db:   {ko: 버피 오버 덤벨, implement: bodyweight, pattern: plyo, cat: G, unbroken: 40, cycle_s: 4.2, fatigue: {plyo: 1.0, push_h: 0.3, squat: 0.2}}
-box_jump:         {ko: 박스 점프, implement: bodyweight, pattern: plyo, cat: G, unbroken: 45, cycle_s: 2.4, fatigue: {plyo: 1.0, squat: 0.3}}
-box_jump_over:    {ko: 박스 점프 오버, implement: bodyweight, pattern: plyo, cat: G, unbroken: 40, cycle_s: 3.0, fatigue: {plyo: 1.0, squat: 0.3}}
-burpee_broad_jump: {ko: 버피 브로드 점프, implement: bodyweight, pattern: plyo, cat: G, speed_mps: 0.45, fatigue: {plyo: 1.0, push_h: 0.3}}
+burpee:           {ko: 버피, aliases: ["burpee", "버피테스트"], implement: bodyweight, pattern: plyo, cat: G, unbroken: 45, cycle_s: 3.6, fatigue: {plyo: 1.0, push_h: 0.3, squat: 0.2}}
+burpee_over_bar:  {ko: 버피 오버 더 바, aliases: ["burpee over the bar", "burpee over bar", "bar facing burpee", "BB burpee", "버피 오버 바"], implement: bodyweight, pattern: plyo, cat: G, unbroken: 40, cycle_s: 4.5, fatigue: {plyo: 1.0, push_h: 0.3, squat: 0.2}}
+burpee_over_db:   {ko: 버피 오버 덤벨, aliases: ["burpee over the db", "burpee over db", "burpee over dumbbell", "버피 오버 더 덤벨"], implement: bodyweight, pattern: plyo, cat: G, unbroken: 40, cycle_s: 4.2, fatigue: {plyo: 1.0, push_h: 0.3, squat: 0.2}}
+box_jump:         {ko: 박스 점프, aliases: ["box jump", "박스점프"], implement: bodyweight, pattern: plyo, cat: G, unbroken: 45, cycle_s: 2.4, fatigue: {plyo: 1.0, squat: 0.3}}
+box_jump_over:    {ko: 박스 점프 오버, aliases: ["box jump over", "박스점프 오버"], implement: bodyweight, pattern: plyo, cat: G, unbroken: 40, cycle_s: 3.0, fatigue: {plyo: 1.0, squat: 0.3}}
+burpee_broad_jump: {ko: 버피 브로드 점프, aliases: ["burpee broad jump", "버피 브로드점프"], implement: bodyweight, pattern: plyo, cat: G, speed_mps: 0.45, fatigue: {plyo: 1.0, push_h: 0.3}}
 
 # ── 운반 / 썰매 (HYROX) ──────────────────────────────────
-farmers_carry: {ko: 파머스 캐리, implement: other, pattern: core, cat: W, speed_mps: 1.5}
-sled_push:     {ko: 슬레드 푸쉬, implement: other, pattern: squat, cat: W, speed_mps: 0.45}
-sled_pull:     {ko: 슬레드 풀, implement: other, pattern: pull_h, cat: W, speed_mps: 0.35}
+farmers_carry: {ko: 파머스 캐리, aliases: ["farmers carry", "farmer carry", "파머 캐리"], implement: other, pattern: core, cat: W, speed_mps: 1.5}
+sled_push:     {ko: 슬레드 푸쉬, aliases: ["sled push", "슬레드푸쉬", "썰매 밀기"], implement: other, pattern: squat, cat: W, speed_mps: 0.45}
+sled_pull:     {ko: 슬레드 풀, aliases: ["sled pull", "슬레드풀", "썰매 당기기"], implement: other, pattern: pull_h, cat: W, speed_mps: 0.35}
 
 # ── 머신(에르고) ─────────────────────────────────────────
-row:          {ko: 로잉, implement: erg, erg: row, cat: M, fatigue: {pull_h: 0.5, squat: 0.3, hinge: 0.3}}
-ski:          {ko: 스키에르그, implement: erg, erg: ski, cat: M, fatigue: {pull_v: 0.5, core: 0.3}}
-bike_erg:     {ko: 바이크, implement: erg, erg: bike, cat: M, fatigue: {squat: 0.5}}
-assault_bike: {ko: 어썰트 바이크, implement: erg, erg: assault, cat: M, fatigue: {squat: 0.4, push_h: 0.2}}
-run:          {ko: 러닝, implement: erg, erg: run, cat: M, fatigue: {lunge: 0.4, squat: 0.3}}
-machine:      {ko: 머신(선택), implement: erg, erg: preferred, cat: M, fatigue: {squat: 0.3, pull_h: 0.3}}
+row:          {ko: 로잉, aliases: ["row", "rowing", "rower", "로잉머신", "로우 머신"], implement: erg, erg: row, cat: M, fatigue: {pull_h: 0.5, squat: 0.3, hinge: 0.3}}
+ski:          {ko: 스키에르그, aliases: ["ski", "ski erg", "skierg", "스키", "스키 에르그"], implement: erg, erg: ski, cat: M, fatigue: {pull_v: 0.5, core: 0.3}}
+bike_erg:     {ko: 바이크, aliases: ["bike", "bike erg", "bikeerg", "바이크에르그"], implement: erg, erg: bike, cat: M, fatigue: {squat: 0.5}}
+assault_bike: {ko: 어썰트 바이크, aliases: ["assault bike", "assault", "air bike", "echo bike", "ab", "어썰트", "에어바이크"], implement: erg, erg: assault, cat: M, fatigue: {squat: 0.4, push_h: 0.2}}
+run:          {ko: 러닝, aliases: ["run", "running", "treadmill", "런닝", "달리기", "트레드밀"], implement: erg, erg: run, cat: M, fatigue: {lunge: 0.4, squat: 0.3}}
+machine:      {ko: 머신(선택), aliases: ["machine", "머신", "any machine"], implement: erg, erg: preferred, cat: M, fatigue: {squat: 0.3, pull_h: 0.3}}

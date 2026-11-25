@@ -15,6 +15,7 @@ from . import catalog as C
 from .athlete import Athlete
 
 INTENT_PCT = {"light": 0.47, "moderate": 0.57, "heavy": 0.67}
+INTENT_CAP = {"light": 0.60, "moderate": 0.70, "heavy": 0.82}   # 볼륨이 아무리 적어도 넘지 않는 %1RM
 LOADED = ("barbell", "dumbbell", "kettlebell")
 PRED_NOISE = 0.10
 STRESS_PER_MAXSET = 1.5      # 한계 세트 1개 분량의 볼륨 = 고강도 세트 1.5개 상당
@@ -322,8 +323,9 @@ def choose_loads(athlete: Athlete, rounds: list[list[dict]], items: list[dict], 
         pct = INTENT_PCT[intensity] + (0.03 if team_rest else 0.0)
         pct -= 0.08 * math.log2(max(total[mid], 1.0) / 30.0)
         pct -= 0.03 * math.log2(max(set_eff[mid], 1.0) / 9.0)
-        pct = min(max(pct * math.exp(pref), 0.25), 0.85)
-        raw[mid] = pct * athlete.one_rm(mid)
+        pct = min(max(pct * math.exp(pref), 0.25), INTENT_CAP[intensity])
+        # 아직 기록이 없는 동작은 추정이 불확실한 만큼 보수적으로 잡는다
+        raw[mid] = pct * athlete.one_rm(mid) * math.exp(-0.5 * athlete.log1rm(mid, today=False)[1])
 
     loads: dict[str, float] = dict(fixed)
     limiter: dict[str, str] = {}
