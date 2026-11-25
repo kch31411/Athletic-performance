@@ -5,6 +5,7 @@
     python -m coach plan 2026-11-25 -s weight cardio
     python -m coach review 2026-11-25      그날 기록의 예측 vs 실제
     python -m coach status                 능력치 현황 (data/athlete/status.md, state.json 갱신)
+    python -m coach hyrox                  HYROX 오픈 싱글 예상 기록 (구간별)
     python -m coach tools                  도구(API/MCP) 목록
     python -m coach call <도구> '<json>'   MCP 와 같은 도구를 직접 호출 (검증·멱등 동일)
 """
@@ -69,6 +70,14 @@ def cmd_status(root: Path, args) -> int:
     return 0
 
 
+def cmd_hyrox(root: Path, args) -> int:
+    from . import hyrox
+    until = date.fromisoformat(args.date) if args.date else date.today()
+    athlete = build(root, until=until)
+    print(render.hyrox_md(athlete, hyrox.predict(athlete, args.division)))
+    return 0
+
+
 def cmd_tools(root: Path, _args) -> int:
     from . import api
     for name, spec in api.TOOLS.items():
@@ -110,6 +119,10 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("status")
     p.add_argument("date", nargs="?")
     p.set_defaults(fn=cmd_status)
+    p = sub.add_parser("hyrox")
+    p.add_argument("date", nargs="?")
+    p.add_argument("--division", default="open", choices=["open", "pro"])
+    p.set_defaults(fn=cmd_hyrox)
     sub.add_parser("tools").set_defaults(fn=cmd_tools)
     p = sub.add_parser("call")
     p.add_argument("tool")

@@ -5,7 +5,7 @@
 ```
 에이전트(LLM)  ── 말·사진을 구조화된 입력으로 옮기는 일만 한다
      │  MCP (stdio 또는 HTTP)
-도구 계층      coach/api.py · models.py   ── 입력 검증, 저장, 멱등성. 23개 도구 + 규칙 안내 1개
+도구 계층      coach/api.py · models.py   ── 입력 검증, 저장, 멱등성. 26개 도구 + 규칙 안내 1개
      │
 엔진           belief · athlete · strength · metcon · feedback · replay ── 계산과 예측. LLM 없음
 ```
@@ -49,6 +49,8 @@
 | R | `predict_erg` | 칼로리/거리/시간 중 하나 → 나머지 |
 | R | `predict_metcon` | 저장하지 않은 와드의 권장 무게·예상 기록 (what-if) |
 | R | `get_status` | 능력치 추정과 불확실성, 피로 |
+| R | `predict_hyrox` | HYROX 싱글 예상 기록: 러닝·스테이션 구간별 시간, 평균 대비 약점 |
+| W | `log_hyrox_station` / `log_hyrox_race` | 스테이션 연습·시뮬레이션·대회 기록 → 레이스 예측 갱신 |
 | W | `log_checkin` | 운동 전 컨디션(수면·근육통) |
 | W | `log_strength_result` | 한 동작의 세트 기록 → 갱신된 1RM 추정 반환 |
 | W | `log_metcon_result` | 와드(또는 섹션) 하나의 결과 → 예측 대비 차이 반환 |

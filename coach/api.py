@@ -18,10 +18,11 @@ import yaml
 from pydantic import Field, validate_call
 
 from . import catalog as C
-from . import planjson, render
+from . import hyrox, planjson, render
 from .athlete import LB, normalize_profile
 from .feedback import LogError, parse_time
 from .metcon import evaluate
+from .models import Strict  # noqa: E402  (StationSplit 에서 사용)
 from .models import (EFFORT_RPE, SESSION_SRPE, Choice, Day, Effort, ErgEffort, Load, Machine, MetconBlock,
                      MetconScore, MovementId, RepsLeft, Rpe, Scale, Session, SessionFeel, SessionId, SetGroup,
                      Soreness, StrengthBlock, Superset, TimeStr, Unit, UsedLoad)
@@ -626,6 +627,9 @@ def _events(day: date, session_id: Optional[str] = None) -> list[dict]:
                 row.update(predicted_time=planjson.t_out(e["pred_s"]), actual_time=planjson.t_out(e["actual_s"]))
             else:
                 row.update(predicted_rounds=round(e["pred_rounds"], 1), actual_rounds=round(e["actual_rounds"], 1))
+        elif e["kind"] == "hyrox":
+            row.update(what=e["what"], performance_vs_expected_pct=round(-s * 100, 1),
+                       predicted_time=planjson.t_out(e["pred_s"]), actual_time=planjson.t_out(e["actual_s"]))
         else:
             row.update(machine=e["mod"], performance_vs_expected_pct=round(s * 100, 1),
                        sustainable_cal_per_min={"before": round(e["cp_before"], 1), "after": round(e["cp_after"], 1)})
@@ -842,6 +846,120 @@ def get_review(date: Day) -> dict[str, Any]:
     performance_vs_expected_pct > 0 means better than the model expected."""
     athlete = build(ROOT, until=date)
     return {"date": date.isoformat(), "updates": _events(date), "markdown": render.review_md(athlete, date)}
+
+
+# ── HYROX ────────────────────────────────────────────────
+Division = Annotated[Literal["open", "pro"], Field(description="HYROX singles division (sex comes from the profile).")]
+HyroxStation = Literal["ski", "sled_push", "sled_pull", "burpee_broad_jump", "row", "farmers_carry",
+                       "sandbag_lunge", "wall_ball"]
+
+
+def _hyrox_out(athlete, division: str) -> dict:
+    p = hyrox.predict(athlete, division)
+    lo, hi = p["total_s"] * math.exp(-p["sd_log"]), p["total_s"] * math.exp(p["sd_log"])
+    legs = []
+    for leg in p["legs"]:
+        row = {"kind": leg["kind"], "time": planjson.t_out(leg["seconds"])}
+        if leg["kind"] == "run":
+            row["run_number"] = leg["index"]
+        else:
+            row.update(station=leg["station"], name=hyrox.STATION_KO[leg["station"]], load_kg=leg["load_kg"],
+                       seconds_vs_average_athlete=round(leg["vs_reference_s"]))
+        legs.append(row)
+    return {"division": division, "sex": p["sex"],
+            "total": {"seconds": round(p["total_s"]), "text": render.hms(p["total_s"])},
+            "range": {"fast": render.hms(lo), "slow": render.hms(hi)},
+            "run_total": planjson.t_out(p["run_total_s"]), "station_total": planjson.t_out(p["station_total_s"]),
+            "roxzone": planjson.t_out(p["roxzone_s"]),
+            "average_athlete_total": render.hms(p["reference"]["total_s"]),
+            "run_seconds_vs_average_athlete": round(p["run_vs_reference_s"]),
+            "hyrox_results_used": athlete.n_obs.get("hyx", 0), "legs": legs,
+            "markdown": render.hyrox_md(athlete, p)}
+
+
+@tool()
+def predict_hyrox(division: Division = "open", date: OptDay = None) -> dict[str, Any]:
+    """Predicted HYROX singles race: total time with range, every run and station split, and where time is
+    lost or gained versus an average intermediate athlete. Assumes a rested race day."""
+    return _hyrox_out(_athlete(date), division)
+
+
+@tool(writes=True)
+def log_hyrox_station(
+    date: Day,
+    station: HyroxStation,
+    time: TimeStr,
+    effort: Annotated[Literal["race", "fresh"], Field(description=(
+        "race: done inside a race or full/partial simulation, already fatigued. "
+        "fresh: a stand-alone all-out attempt when rested."))],
+    session_id: SessionId = "extra",
+    division: Division = "open",
+    load: Annotated[Optional[Load], Field(description=(
+        "Only if different from the division standard. Sleds: total including the sled. "
+        "Farmers carry: ONE hand. Sandbag / wall ball: that implement."))] = None,
+    amount: Annotated[Optional[float], Field(gt=0, description=(
+        "Only if shorter than the race standard: meters (wall_ball: reps). "
+        "Standards: ski/row 1000 m, sleds 50 m, burpee broad jump 80 m, farmers 200 m, lunges 100 m, wall balls 100."))] = None,
+) -> dict[str, Any]:
+    """Record a timed HYROX station (practice, simulation piece). Updates that station's estimate and the
+    race prediction. For a fresh all-out ski/row test use log_erg_result instead."""
+    if station in hyrox.ERG_FRAC and effort == "fresh":
+        raise ApiError("a fresh all-out ski/row piece is a machine test: use log_erg_result")
+    if load is not None and hyrox.station_load(division, _sex(), station) is None:
+        raise ApiError(f"{station} has no load")
+    if amount is not None and amount > hyrox.AMOUNT[station]:
+        raise ApiError(f"amount exceeds the race standard ({hyrox.AMOUNT[station]:g} {hyrox.UNIT[station]})")
+    _session(date, session_id)
+    before = _hyrox_out(_athlete(date), division)["total"]
+    entry: dict = {"hyrox_station": station, "time": parse_time(time), "division": division, "effort": effort}
+    if load is not None:
+        entry["load_kg"] = round(load.kg(), 2)
+    if amount is not None and amount < hyrox.AMOUNT[station]:
+        entry["amount"] = amount
+    key = {k: v for k, v in entry.items() if k != "time"}
+    out = _upsert(date, session_id, lambda r: {k: v for k, v in r.items() if k != "time"} == key, entry)
+    updates = [e for e in _events(date, session_id) if e["kind"] == "hyrox" and e.get("what") == station]
+    out.update(date=date.isoformat(), station=station, model_update=updates[-1] if updates else None,
+               race_prediction={"before": before["text"], "after": _hyrox_out(_athlete(date), division)["total"]["text"]})
+    return out
+
+
+class StationSplit(Strict):
+    station: HyroxStation
+    time: TimeStr
+
+
+@tool(writes=True)
+def log_hyrox_race(
+    date: Day,
+    total_time: Annotated[Optional[TimeStr], Field(description='Finish time, e.g. "1:28:45".')] = None,
+    run_splits: Annotated[list[TimeStr], Field(description="The eight 1 km run splits in order (all eight or none).")] = [],
+    station_splits: Annotated[list[StationSplit], Field(description="Station times from the result sheet (any subset).")] = [],
+    division: Division = "open",
+) -> dict[str, Any]:
+    """Record a HYROX race or full simulation. With splits, each segment updates its own estimate; with
+    only a total, everything is scaled together. Logging again for the same date replaces the earlier race."""
+    if total_time is None and not run_splits and not station_splits:
+        raise ApiError("give total_time and/or splits")
+    if run_splits and len(run_splits) != 8:
+        raise ApiError("run_splits must contain all eight 1 km splits (or be omitted)")
+    stations = {s.station: parse_time(s.time) for s in station_splits}
+    if len(stations) != len(station_splits):
+        raise ApiError("station_splits lists a station twice")
+    before = _hyrox_out(_athlete(date), division)["total"]
+    race: dict = {"division": division}
+    if total_time is not None:
+        race["total"] = parse_time(total_time)
+    if run_splits:
+        race["run_splits"] = [parse_time(t) for t in run_splits]
+    if stations:
+        race["stations"] = stations
+    minutes = (race.get("total") or sum(race.get("run_splits", [])) + sum(stations.values())) / 60.0
+    out = _upsert(date, "race", lambda r: "hyrox_race" in r, {"hyrox_race": race},
+                  {"srpe": 10, "duration_min": round(minutes, 1)})
+    out.update(date=date.isoformat(), model_updates=[e for e in _events(date, "race") if e["kind"] == "hyrox"],
+               race_prediction={"before": before["text"], "after": _hyrox_out(_athlete(date), division)["total"]["text"]})
+    return out
 
 
 def call(name: str, args: dict) -> dict:

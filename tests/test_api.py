@@ -229,3 +229,63 @@ def test_mcp_server_exposes_the_same_tools(root):
             message = str(e)
         assert "Sessions:" in message and "weight" in message
     asyncio.run(go())
+
+
+# ── HYROX ────────────────────────────────────────────────
+def test_hyrox_prediction_adds_up_and_orders_sensibly(root):
+    p = api.call("predict_hyrox", {"date": "2026-11-26"})
+    assert [l["kind"] for l in p["legs"]] == ["run", "station"] * 8
+    assert [l["station"] for l in p["legs"] if l["kind"] == "station"][0] == "ski"
+    parts = sum(l["time"]["seconds"] for l in p["legs"]) + p["roxzone"]["seconds"]
+    assert abs(parts - p["total"]["seconds"]) <= 10                       # 구간 합 = 총 기록(반올림 오차)
+    assert 70 * 60 < p["total"]["seconds"] < 110 * 60                     # 중급 남성: 평균권
+    assert p["range"]["fast"] < p["total"]["text"] < p["range"]["slow"]
+    assert p == api.call("predict_hyrox", {"date": "2026-11-26"})          # 결정적
+    pro = api.call("predict_hyrox", {"division": "pro", "date": "2026-11-26"})
+    assert pro["total"]["seconds"] > p["total"]["seconds"] + 180           # 프로 부하는 훨씬 느리다
+    api.call("add_strength_benchmark", {"movement": "back_squat", "load": {"value": 180, "unit": "kg"}, "reps": 1})
+    strong = api.call("predict_hyrox", {"date": "2026-11-26"})
+    leg = lambda r, s: next(l["time"]["seconds"] for l in r["legs"] if l.get("station") == s)
+    assert leg(strong, "sled_push") < leg(p, "sled_push") and leg(strong, "ski") == leg(p, "ski")
+
+
+def test_hyrox_station_practice_updates_that_station_and_the_race(root):
+    before = api.call("predict_hyrox", {"date": "2026-11-27"})
+    leg = lambda r, s: next(l["time"]["seconds"] for l in r["legs"] if l.get("station") == s)
+    args = {"date": "2026-11-27", "station": "sled_push", "time": "2:40", "effort": "race",
+            "session_id": "hyrox_strength"}
+    out = api.call("log_hyrox_station", args)
+    assert out["model_update"]["performance_vs_expected_pct"] > 10
+    after = api.call("predict_hyrox", {"date": "2026-11-27"})
+    assert leg(after, "sled_push") < leg(before, "sled_push") - 20
+    assert leg(after, "wall_ball") <= leg(before, "wall_ball")             # 다른 구간은 거의 그대로(조금 빨라질 수는 있음)
+    assert leg(before, "wall_ball") - leg(after, "wall_ball") < 20
+    assert after["total"]["seconds"] < before["total"]["seconds"] and after["hyrox_results_used"] == 1
+    assert api.call("log_hyrox_station", args)["replaced_existing"] is True
+    assert api.call("predict_hyrox", {"date": "2026-11-27"}) == after      # 재기록해도 이중 반영 없음
+    half = api.call("log_hyrox_station", {"date": "2026-11-27", "station": "wall_ball", "time": "2:30",
+                                          "effort": "fresh", "amount": 50})
+    assert half["model_update"]["predicted_time"]["seconds"] < leg(after, "wall_ball") / 2
+    with pytest.raises(api.ApiError, match="log_erg_result"):
+        api.call("log_hyrox_station", {"date": "2026-11-27", "station": "row", "time": "3:50", "effort": "fresh"})
+    with pytest.raises(api.ApiError, match="exceeds"):
+        api.call("log_hyrox_station", {"date": "2026-11-27", "station": "sled_pull", "time": "9:00",
+                                       "effort": "race", "amount": 100})
+
+
+def test_hyrox_race_result_recalibrates(root):
+    pred = api.call("predict_hyrox", {"date": "2026-12-05"})
+    slow = pred["total"]["seconds"] * 1.10
+    total = f"{int(slow) // 3600}:{int(slow) % 3600 // 60:02d}:{int(slow) % 60:02d}"
+    out = api.call("log_hyrox_race", {"date": "2026-12-05", "total_time": total})
+    after = api.call("predict_hyrox", {"date": "2026-12-06"})
+    assert pred["total"]["seconds"] < after["total"]["seconds"] <= slow + 5
+    assert out["model_updates"][-1]["what"] == "total"
+    with pytest.raises(api.ApiError, match="eight"):
+        api.call("log_hyrox_race", {"date": "2026-12-05", "run_splits": ["5:00", "5:10"]})
+    splits = api.call("log_hyrox_race", {"date": "2026-12-05", "total_time": total,
+                                         "run_splits": ["4:40"] * 8,
+                                         "station_splits": [{"station": "wall_ball", "time": "9:30"}]})
+    kinds = {u["what"]: u["performance_vs_expected_pct"] for u in splits["model_updates"]}
+    assert kinds["run"] > 0 > kinds["wall_ball"]                           # 러닝은 예상보다 빠르고 월볼은 느렸다
+    assert "HYROX" in api.call("get_review", {"date": "2026-12-05"})["markdown"]

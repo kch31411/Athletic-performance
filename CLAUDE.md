@@ -10,6 +10,9 @@
 - 컨테이너는 휘발성이다. **data/ 를 바꿨으면 그 턴 안에 커밋·푸시**해야 다음 세션에 남는다.
 
 ## 사용자 메모
+- **목표: HYROX 오픈 싱글 출전** (2026-11-25 밝힘, 대회 날짜 미정 — 정해지면 여기 적는다).
+  `python -m coach hyrox` 로 예상 기록·약점 구간을 본다. 스테이션을 시간 재고 했다는 말이 나오면
+  `log_hyrox_station`(쌩쌩할 때였는지 `fresh` / 지친 상태였는지 `race` 확인), 시뮬레이션·대회는 `log_hyrox_race`.
 - 주로 **CARDIO / HYROX** 수업을 듣는다 → 처방을 전달할 때 그 세션을 먼저, 자세히. 나머지는 요청하면.
 - 바벨은 파운드, 덤벨·케틀벨은 kg 을 쓴다 (2026-11-25 본인 확인) → `equipment.barbell_unit: lb`.
 - **1~10 강도 숫자는 모호하다고 함 (2026-11-25).** 숫자를 묻거나 처방에 RPE 를 쓰지 않는다.
@@ -25,6 +28,7 @@ python -m coach plan 2026-11-25    # 처방서 → data/plans/ 저장 (+ -s weig
 python -m coach review 2026-11-25  # 그날 기록: 예측 vs 실제, 무엇이 갱신됐는지
 python -m coach status             # 능력치 현황 → data/athlete/status.md, state.json
 python -m pytest -q                # 엔진을 고쳤으면 반드시
+python -m coach hyrox              # HYROX 오픈 싱글 예상 기록(구간별, 약점)
 python -m coach tools              # 도구(API/MCP) 목록
 python -m coach call <도구> '<json>'   # MCP 와 같은 도구를 직접 호출 (-m: markdown 만 출력)
 ```

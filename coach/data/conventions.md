@@ -51,5 +51,9 @@ gym board or the athlete says into tool inputs exactly; the engine does all arit
 4. Known bests ("bench 155lb x3", "half marathon 1:52") → `add_strength_benchmark` / `add_erg_benchmark`.
 5. Questions ("how many pull-ups can I do", "what should I squat for 5") → `predict_max_reps`,
    `predict_strength_load`, `predict_erg`, `predict_metcon`, `get_status`.
+6. HYROX: "what would my race time be" → `predict_hyrox`. A timed station (practice or simulation) →
+   `log_hyrox_station`; ask whether it was done fresh or already fatigued (`effort`), and give `load` /
+   `amount` only when they differ from the race standard. A race or full simulation → `log_hyrox_race`
+   (finish time, plus splits from the result sheet if available).
 
 Re-logging the same movement / block replaces the earlier entry, so corrections are safe.

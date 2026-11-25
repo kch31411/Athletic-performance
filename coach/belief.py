@@ -15,6 +15,8 @@
     met                 복합 수행능력 (메트콘 페이스)
     met.cat:<W|G>       웨이트 위주 / 맨몸 위주 메트콘 편차
     met.dur:<bucket>    길이별 편차 (short, medium, long)
+    hyx.sta:<station>   HYROX 스테이션별 편차 (기술·요령 등 다른 능력치로 설명 안 되는 부분)
+    hyx.run             HYROX 스테이션 사이 러닝(다리가 무거운 상태)의 편차
     cond                오늘의 컨디션 (매일 초기화)
     loadpref            메트콘 무게 선호 (가볍게/무겁게 피드백으로 학습)
 """
@@ -37,6 +39,8 @@ PRIORS: dict[str, tuple[float, float]] = {
     "met.cat": (0.10, 0.0030),
     "met.dur": (0.08, 0.0030),
     "met": (0.20, 0.0050),
+    "hyx.sta": (0.15, 0.0030),
+    "hyx.run": (0.06, 0.0030),
     "cond": (0.03, 0.0),
     "loadpref": (0.15, 0.0),
 }

@@ -140,6 +140,42 @@
       "value": 0.0,
       "sd": 0.1
     },
+    "hyx.run": {
+      "value": 0.0,
+      "sd": 0.06
+    },
+    "hyx.sta:burpee_broad_jump": {
+      "value": 0.0,
+      "sd": 0.15
+    },
+    "hyx.sta:farmers_carry": {
+      "value": 0.0,
+      "sd": 0.15
+    },
+    "hyx.sta:row": {
+      "value": 0.0,
+      "sd": 0.15
+    },
+    "hyx.sta:sandbag_lunge": {
+      "value": 0.0,
+      "sd": 0.15
+    },
+    "hyx.sta:ski": {
+      "value": 0.0,
+      "sd": 0.15
+    },
+    "hyx.sta:sled_pull": {
+      "value": 0.0,
+      "sd": 0.15
+    },
+    "hyx.sta:sled_push": {
+      "value": 0.0,
+      "sd": 0.15
+    },
+    "hyx.sta:wall_ball": {
+      "value": 0.0,
+      "sd": 0.15
+    },
     "loadpref": {
       "value": 0.2495,
       "sd": 0.12
@@ -215,6 +251,10 @@
     "str.mov:strict_press": {
       "value": 0.0405,
       "sd": 0.0796
+    },
+    "str.mov:thruster": {
+      "value": 0.0,
+      "sd": 0.1
     },
     "str.pat:hinge": {
       "value": -0.0357,

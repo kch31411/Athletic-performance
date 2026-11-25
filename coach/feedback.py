@@ -8,6 +8,7 @@ import math
 from datetime import date
 
 from . import catalog as C
+from . import hyrox
 from .athlete import Athlete
 from .metcon import evaluate
 from .strength import set_fatigue
@@ -276,6 +277,14 @@ def apply_session(athlete: Athlete, day: date, workout: dict | None, slog: dict)
             if not 0 <= idx < len(session["blocks"]):
                 raise LogError(f"{tag}: block {res['block']} 이 없습니다")
             apply_metcon(athlete, session["blocks"][idx], res, tag)
+        elif "hyrox_station" in res:
+            hyrox.observe_station(athlete, res["hyrox_station"], parse_time(res["time"]),
+                                  res.get("division", "open"), res.get("load_kg"), res.get("amount"),
+                                  res.get("effort", "race"), tag)
+        elif "hyrox_race" in res:
+            race = res["hyrox_race"]
+            hyrox.observe_race(athlete, race.get("division", "open"), race.get("total"),
+                               race.get("run_splits"), race.get("stations"), tag)
         elif "erg" in res:
             apply_erg(athlete, res, tag)
         elif "movement" in res:

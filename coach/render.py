@@ -5,6 +5,7 @@ import math
 from datetime import date
 
 from . import catalog as C
+from . import hyrox
 from .athlete import LB, Athlete, MAX_PENALTY
 from .metcon import evaluate
 from .strength import confidence, plan_block
@@ -456,7 +457,48 @@ def status_md(athlete: Athlete) -> str:
         out.append(f"- {label}: {pct(b.value(name))} (±{b.sd(name) * 100:.0f}%)")
     out.append(f"- 메트콘 무게 선호 보정: {pct(b.value('loadpref'))}")
 
+    race = hyrox.predict(athlete, "open")
+    out += ["", "## HYROX 오픈 싱글", "",
+            f"- 예상 {hms(race['total_s'])} (범위 {hms(race['total_s'] * math.exp(-race['sd_log']))}"
+            f"~{hms(race['total_s'] * math.exp(race['sd_log']))}) · HYROX 기록 {athlete.n_obs.get('hyx', 0)}건 반영"]
     out += ["", "## 컨디션 · 피로", ""] + [f"- {x}" for x in condition_lines(athlete)]
+    return "\n".join(out) + "\n"
+
+
+# ── HYROX 레이스 예측 ────────────────────────────────────
+def hms(s: float) -> str:
+    s = int(round(s))
+    return f"{s // 3600}:{s % 3600 // 60:02d}:{s % 60:02d}" if s >= 3600 else mmss(s)
+
+
+def hyrox_md(athlete: Athlete, pred: dict) -> str:
+    div = {"open": "오픈", "pro": "프로"}[pred["division"]]
+    lo, hi = pred["total_s"] * math.exp(-pred["sd_log"]), pred["total_s"] * math.exp(pred["sd_log"])
+    out = [f"# HYROX {div} 싱글 예상 기록", "",
+           f"**{hms(pred['total_s'])}** (예상 범위 {hms(lo)}~{hms(hi)}) · "
+           f"같은 조건의 중급 평균 선수 {hms(pred['reference']['total_s'])}", "",
+           f"- 러닝 8km 합계 {hms(pred['run_total_s'])} · 스테이션 합계 {hms(pred['station_total_s'])} "
+           f"· 이동 구간 {mmss(pred['roxzone_s'])}",
+           f"- HYROX 기록 반영 {athlete.n_obs.get('hyx', 0)}건"
+           + (" — 아직 없어서 다른 능력치에서 간접 추정한 값입니다." if not athlete.n_obs.get("hyx") else ""),
+           "", "| 구간 | 예상 | 평균 대비 |", "|---|---|---|"]
+    for leg in pred["legs"]:
+        if leg["kind"] == "run":
+            out.append(f"| 러닝 {leg['index']} (1km) | {mmss(leg['seconds'])} | |")
+        else:
+            st = leg["station"]
+            load = f" · {kg(leg['load_kg'])}kg" if leg.get("load_kg") else ""
+            diff = leg["vs_reference_s"]
+            mark = "비슷" if abs(diff) < 5 else (f"+{diff:.0f}초 느림" if diff > 0 else f"{-diff:.0f}초 빠름")
+            out.append(f"| **{hyrox.STATION_KO[st]}**{load} | **{mmss(leg['seconds'])}** | {mark} |")
+    rd = pred["run_vs_reference_s"]
+    out += ["", f"러닝 8km 는 평균 대비 " + ("비슷합니다." if abs(rd) < 20 else
+            (f"{rd:.0f}초 느립니다." if rd > 0 else f"{-rd:.0f}초 빠릅니다."))]
+    slow = sorted((l for l in pred["legs"] if l["kind"] == "station" and l["vs_reference_s"] >= 5),
+                  key=lambda l: -l["vs_reference_s"])[:3]
+    if slow:
+        out.append("시간을 가장 많이 잃는 구간: " + ", ".join(
+            f"{hyrox.STATION_KO[l['station']]}(+{l['vs_reference_s']:.0f}초)" for l in slow))
     return "\n".join(out) + "\n"
 
 
@@ -487,6 +529,10 @@ def review_md(athlete: Athlete, day: date) -> str:
             verdict = "예상대로" if abs(s) < 0.03 else (f"예상보다 {abs(s) * 100:.0f}% {'느림' if s > 0 else '빠름'}")
             out.append(f"- `{sid}` **메트콘** {body} → {verdict} · "
                        f"복합 수행능력 {pct(e['met_before'])} → **{pct(e['met_after'])}**")
+        elif e["kind"] == "hyrox":
+            name = {"run": "HYROX 러닝", "total": "HYROX 총 기록"}.get(e["what"]) or hyrox.STATION_KO[e["what"]]
+            verdict = "예상대로" if abs(s) < 0.03 else (f"예상보다 {abs(s) * 100:.0f}% {'느림' if s > 0 else '빠름'}")
+            out.append(f"- `{sid}` **{name}** 예측 {hms(e['pred_s'])} / 실제 {hms(e['actual_s'])} → {verdict}")
         elif e["kind"] == "erg":
             verdict = "예상대로" if abs(s) < 0.03 else (f"예상보다 {abs(s) * 100:.0f}% {'높음' if s > 0 else '낮음'}")
             out.append(f"- `{sid}` **{C.ERG_KO[e['mod']]}** {mmss(e['seconds'])} 구간 출력 → {verdict} · "
