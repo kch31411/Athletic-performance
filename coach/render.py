@@ -74,6 +74,15 @@ def pace_text(mod: str, speed: float) -> str:
     return f"{mmss(1000 / speed)}/1000m"
 
 
+def left_text(rir: float) -> str:
+    """목표 강도를 '마지막 세트에서 몇 개 남기나'로 말한다."""
+    lo, hi = math.floor(rir + 1e-9), math.ceil(rir - 1e-9)
+    if hi <= 0:
+        return "마지막 세트는 한계까지"
+    span = f"{lo}개" if lo == hi else f"{lo}~{hi}개"
+    return f"마지막 세트 끝에 {span} 더 할 수 있는 정도"
+
+
 def is_cold(athlete: Athlete) -> bool:
     return sum(athlete.n_obs.values()) < 5
 
@@ -95,7 +104,7 @@ def condition_lines(athlete: Athlete) -> list[str]:
         lines.append(f"전신 피로 지수 {athlete.sys_fatigue:.1f} (1.0 ≈ 어제 힘든 수업 1회)")
     acwr = athlete.acwr()
     if acwr is not None:
-        flag = " ⚠️ 급격한 부하 증가 — 오늘은 RPE를 한 단계 낮추세요" if acwr > 1.5 else ""
+        flag = " ⚠️ 급격한 부하 증가 — 오늘은 세트마다 1개씩 더 남기세요" if acwr > 1.5 else ""
         lines.append(f"최근 7일/28일 부하 비 {acwr:.2f}{flag}")
     return lines or ["특이사항 없음 (누적 피로 미미)"]
 
@@ -123,7 +132,7 @@ def strength_lines(plans: list[dict]) -> list[str]:
         prev_group = p["superset"] if in_superset else object()
         tag = " (슈퍼세트)" if in_superset and lead.strip() != "＋" else ""
         head = f"{lead}**{name}**{tag} {p['sets']}세트 × {_reps_text(p)}"
-        rpe = f"마지막 세트 RPE {num(p['rpe'])}"
+        rpe = left_text(10 - p["rpe"])
         sub = []
         if p["mode"] == "load":
             head += f" — **{load_text(p['movement'], p['load'])}**"
@@ -339,7 +348,7 @@ def plan_day(athlete: Athlete, day: dict, only: list[str] | None = None) -> str:
     out += [f"- 오늘 상태: {x}" for x in condition_lines(athlete)]
     if is_cold(athlete):
         out.append("- ⚠️ 아직 기록이 거의 없어 **수준 평균값으로 추정** 중입니다. 범위의 아래쪽에서 시작해 "
-                   "RPE로 맞추고, 결과를 알려주면 다음 처방부터 빠르게 정확해집니다.")
+                   "남는 개수로 맞추고, 결과를 알려주면 다음 처방부터 빠르게 정확해집니다.")
     for s in day["sessions"]:
         if only and s["id"] not in only:
             continue
@@ -353,14 +362,18 @@ def plan_day(athlete: Athlete, day: dict, only: list[str] | None = None) -> str:
                 out += strength_lines(plan_block(athlete, b))
                 out.append("")
                 step = "+5~10lb" if _BAR_UNIT == "lb" else "+2.5~5kg"
-                out.append(f"조절 규칙: 첫 세트가 RPE 6 이하면 {step}, 목표보다 RPE가 1 이상 높으면 −5%.")
+                out.append(f"조절 규칙: 첫 세트 끝에 4개 이상 더 할 수 있겠으면 {step}, "
+                           "목표보다 덜 남을 것 같으면 −5%.")
             else:
                 out += metcon_lines(athlete, evaluate(athlete, b))
         if s["assumptions"]:
             out.append("")
             out.append("해석/가정: " + " · ".join(s["assumptions"]))
-    out += ["", "---", "끝나고 알려줄 것 → 근력: 종목별 실제 무게×횟수×세트, 마지막 세트 RPE(1~10) / "
-            "메트콘: 기록(시간·라운드), 사용 무게, RPE, 무게가 가벼웠는지·무거웠는지 / 수업 전체 강도(1~10)"]
+    out += ["", "---", "끝나고 알려줄 것",
+            "- 근력: 종목별 실제 무게×횟수×세트 + **마지막 세트에서 몇 개 더 할 수 있었는지**",
+            "- 메트콘: 기록(시간·라운드), 쓴 무게, 무게가 가벼웠는지·무거웠는지, 그리고 끝났을 때 상태 —",
+            "  ① 전력(더 빨리는 불가능) ② 거의 전력(막판 스퍼트만 남음) "
+            "③ 버틸 만함(같은 페이스로 몇 분 더 가능) ④ 편했음(대화 가능)"]
     return "\n".join(out) + "\n"
 
 
@@ -454,14 +467,14 @@ def review_md(athlete: Athlete, day: date) -> str:
     events = [e for e in athlete.events if e.get("tag", "").startswith(prefix)]
     out = [f"# {day.month}.{day.day} ({WEEKDAY[day.weekday()]}) 리뷰 — 예측 vs 실제", ""]
     if not events:
-        out.append("이 날짜에 능력치 갱신으로 이어진 기록이 없습니다 (RPE·기록 시간이 빠졌는지 확인).")
+        out.append("이 날짜에 능력치 갱신으로 이어진 기록이 없습니다 (남은 개수·기록 시간이 빠졌는지 확인).")
         return "\n".join(out) + "\n"
     for e in events:
         sid = e["tag"].split("/", 1)[1]
         s = e["surprise"]
         if e["kind"] == "strength":
             st = e["set"]
-            rpe = f"RPE {10 - st['rir']:g}" if st["rir"] is not None else ""
+            rpe = f"({st['rir']:g}개 남김)" if st["rir"] is not None else ""
             load = f"{wt(e['movement'], st['load'])} × " if st["load"] else ""
             verdict = "예상대로" if abs(s) < 0.02 else (f"예상보다 {abs(s) * 100:.0f}% {'강함' if s > 0 else '약함'}")
             out.append(f"- `{sid}` **{C.ko(e['movement'])}** {load}{num(st['reps'])}회 {rpe} → {verdict} · "

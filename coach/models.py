@@ -24,7 +24,20 @@ SessionId = Annotated[str, Field(pattern=r"^[a-z0-9_]+$", max_length=40,
                                  description="Session id within the day, e.g. hyfit, weight, cardio, "
                                              "hyrox_engine. Use 'extra' for work outside the program.")]
 Rpe = Annotated[float, Field(ge=1, le=10, description=(
-    "Rate of perceived exertion: 10 = no more reps possible, 9 = 1 rep left, 8 = 2 left, 7 = 3 left."))]
+    "Rate of perceived exertion: 10 = no more reps possible, 9 = 1 rep left, 8 = 2 left, 7 = 3 left. "
+    "Only use when the athlete states a number themselves; otherwise use the concrete alternative."))]
+RepsLeft = Annotated[int, Field(ge=0, le=9, description=(
+    "How many MORE reps could have been done at the end of the set with good form. 0 = none (true max "
+    "or failed the last rep). Ask exactly this: \"마지막 세트에서 몇 개 더 할 수 있었어요?\""))]
+Effort = Annotated[Literal["all_out", "hard", "controlled", "easy"], Field(description=(
+    "State at the end of a conditioning workout. all_out: could not have gone any faster, needed to stop "
+    "and recover. hard: close to the limit, only a short final push was left. controlled: tough but steady, "
+    "could have kept the same pace a few more minutes or gone clearly faster. easy: could talk in sentences."))]
+EFFORT_RPE = {"all_out": 10.0, "hard": 9.0, "controlled": 8.0, "easy": 6.5}
+SessionFeel = Annotated[Literal["light", "moderate", "hard", "max"], Field(description=(
+    "How the whole class left the athlete. light: could do it again right away. moderate: worked, plenty "
+    "left. hard: tired, fine after a normal night. max: drained for the rest of the day."))]
+SESSION_SRPE = {"light": 4.0, "moderate": 6.0, "hard": 8.0, "max": 9.5}
 
 
 class Strict(BaseModel):
@@ -193,21 +206,24 @@ class Session(Strict):
 
 # ── 기록 ─────────────────────────────────────────────────
 class SetGroup(Strict):
-    """`count` consecutive identical sets. rpe/feel describe the LAST set of the group."""
+    """`count` consecutive identical sets. reps_left / rpe / feel describe the LAST set of the group;
+    give at most one of them (reps_left preferred)."""
     reps: Annotated[int, Field(ge=1, description="Reps actually completed per set (per side if the movement is per-side).")]
     count: Annotated[int, Field(ge=1, le=20)] = 1
     load: Annotated[Optional[Load], Field(description=(
         "External weight. Required for barbell/dumbbell/kettlebell/machine movements. "
         "For bodyweight movements: weight ADDED (omit for plain bodyweight)."))] = None
     assistance: Annotated[Optional[Load], Field(description="Bodyweight movements only: band/machine assistance.")] = None
+    reps_left: Optional[RepsLeft] = None
     rpe: Optional[Rpe] = None
     feel: Annotated[Optional[Literal["easy", "good", "hard", "fail"]], Field(description=(
-        "Use only when no RPE number was given. easy ≈ 4+ reps left, good ≈ 2 left, hard ≈ 0-1 left, fail = missed reps."))] = None
+        "Only when the athlete cannot say how many reps were left. easy ≈ 4+ left, good ≈ 2 left, "
+        "hard ≈ 0-1 left, fail = missed reps."))] = None
 
     @model_validator(mode="after")
     def _exclusive(self):
-        if self.rpe is not None and self.feel is not None:
-            raise ValueError("give rpe or feel, not both")
+        if sum(x is not None for x in (self.reps_left, self.rpe, self.feel)) > 1:
+            raise ValueError("give only one of reps_left / rpe / feel")
         if self.load is not None and self.assistance is not None:
             raise ValueError("give load or assistance, not both")
         return self

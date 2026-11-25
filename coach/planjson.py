@@ -34,7 +34,7 @@ def strength_item(p: dict) -> dict:
     mid = p["movement"]
     out = {"movement": mid, "name": C.ko(mid), "sets": p["sets"],
            "reps": {"min": int(p["reps_lo"]), "max": int(p["reps_hi"])}, "per_side": p["per_side"],
-           "superset_group": p["superset"], "target_rpe_last_set": p["rpe"], "mode": p["mode"],
+           "superset_group": p["superset"], "target_reps_left_last_set": 10 - p["rpe"], "mode": p["mode"],
            "main": p["main"], "drop_set": p["drop"]}
     if p["assumed_reps"]:
         out["note"] = "reps not specified on the board; 12 assumed"

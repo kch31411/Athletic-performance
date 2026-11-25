@@ -20,7 +20,7 @@
 | 무게 단위 | `{value, unit: kg\|lb}` 필수. 숫자만 보내면 거부. 변환은 서버가 한다 |
 | 덤벨/바벨 기준 | 바벨 = 바 포함 총중량, 덤벨·케틀벨 = 한 개. 출력에도 `convention` 으로 명시 |
 | 시간 | `"M:SS"` 문자열(정규식 검증) |
-| 강도 | RPE 1~10 숫자 또는 `feel: easy\|good\|hard\|fail`. 둘 다 주면 거부 |
+| 강도 | 숫자 척도 대신 사실로 받는다: 근력 `reps_left`(몇 개 더 가능했나), 메트콘 `effort: all_out\|hard\|controlled\|easy`, 수업 전체 `feel: light\|moderate\|hard\|max`. 1~10 숫자(`rpe`)는 본인이 말했을 때만. 둘 이상 주면 거부 |
 | 메트콘 결과 | `type` 으로 구분: time / capped / rounds / rotation / none. 형식과 안 맞으면 거부 |
 | 여/남 기준 | `{f, m}`. 프로필 성별에 맞는 값은 서버가 고른다 |
 | 오타·없는 필드 | 모든 객체가 `additionalProperties: false` |
@@ -43,8 +43,8 @@
 | W | `add_strength_benchmark` / `add_erg_benchmark` | 알고 있는 기록(PB, 하프마라톤 등) |
 | W | `save_program_day` | 하루치 프로그램 저장(그 날짜를 통째로 교체) |
 | R | `get_program_day` / `list_program_days` | 저장된 프로그램, 기록 여부 |
-| R | `get_plan` | **그날 처방**: 무게·목표 RPE·세트 분할·목표 기록·머신 페이스 (+ 한국어 `markdown`) |
-| R | `predict_strength_load` | 세트×횟수×목표 RPE → 권장 무게 |
+| R | `get_plan` | **그날 처방**: 무게·세트 끝에 남길 개수·세트 분할·목표 기록·머신 페이스 (+ 한국어 `markdown`) |
+| R | `predict_strength_load` | 세트×횟수×남길 개수 → 권장 무게 |
 | R | `predict_max_reps` | 무게 → 연속 최대 횟수, 추정 1RM |
 | R | `predict_erg` | 칼로리/거리/시간 중 하나 → 나머지 |
 | R | `predict_metcon` | 저장하지 않은 와드의 권장 무게·예상 기록 (what-if) |
@@ -95,7 +95,7 @@ MCP 없이 같은 도구를 쓰려면:
 python -m coach tools
 python -m coach call get_plan '{"date": "2026-11-26", "session_ids": ["cardio"]}' -m
 python -m coach call log_metcon_result '{"date": "2026-11-26", "session_id": "cardio",
-  "result": {"type": "time", "time": "12:40"}, "rpe": 9, "load_feel": "good",
+  "result": {"type": "time", "time": "12:40"}, "effort": "hard", "load_feel": "good",
   "loads": [{"movement": "hang_clean_and_jerk", "load": {"value": 85, "unit": "lb"}},
             {"movement": "front_squat", "load": {"value": 85, "unit": "lb"}}]}'
 ```
@@ -107,7 +107,7 @@ python -m coach call log_metcon_result '{"date": "2026-11-26", "session_id": "ca
 ```json
 {"tool": "log_strength_result", "arguments": {
   "date": "2026-11-26", "session_id": "weight", "movement": "bench_press",
-  "sets": [{"reps": 5, "count": 5, "load": {"value": 155, "unit": "lb"}, "rpe": 9}]}}
+  "sets": [{"reps": 5, "count": 5, "load": {"value": 155, "unit": "lb"}, "reps_left": 1}]}}
 ```
 
 응답(요지): `{"replaced_existing": false, "model_update": {"performance_vs_expected_pct": 4.1,

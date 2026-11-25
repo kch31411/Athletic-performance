@@ -11,9 +11,14 @@ gym board or the athlete says into tool inputs exactly; the engine does all arit
   Never convert units yourself. Barbell = total including the bar. Dumbbell/kettlebell = ONE implement
   ("20kg dumbbells x2" → `{value: 20, unit: "kg"}`).
 - Times: `"M:SS"` strings ("12분 34초" → `"12:34"`).
-- RPE 1-10: 10 = no reps left, 9 = 1 left, 8 = 2 left, 7 = 3 left. If the athlete gives only words,
-  use `feel`: easy / good / hard / fail. Never invent an RPE. If neither is given, log without it
-  (the work still counts toward fatigue) and ask once.
+- Effort is asked as concrete facts, not a 1-10 score (the athlete finds the number scale vague):
+  - Strength: "마지막 세트에서 몇 개 더 할 수 있었어요?" → `reps_left` (0 = none). Vague words only →
+    `feel`: easy / good / hard / fail.
+  - Conditioning: how it ended → `effort`: all_out (could not go faster) / hard (only a final push left) /
+    controlled (could hold the pace a few more minutes) / easy (could talk).
+  - Whole class → `feel`: light / moderate / hard / max.
+  - Use the numeric `rpe` / `srpe` fields only when the athlete volunteers a number.
+  - Never invent any of these. If not given, log without it (the work still counts toward fatigue) and ask once.
 - Never estimate or adjust numbers yourself. To answer "what should I lift / how fast", call a
   prediction tool and relay its numbers (the `markdown` field is ready to show).
 

@@ -22,9 +22,9 @@ from . import planjson, render
 from .athlete import LB, normalize_profile
 from .feedback import LogError, parse_time
 from .metcon import evaluate
-from .models import (Choice, Day, ErgEffort, Load, Machine, MetconBlock, MetconScore, MovementId, Rpe,
-                     Scale, Session, SessionId, SetGroup, Soreness, StrengthBlock, Superset, TimeStr,
-                     Unit, UsedLoad)
+from .models import (EFFORT_RPE, SESSION_SRPE, Choice, Day, Effort, ErgEffort, Load, Machine, MetconBlock,
+                     MetconScore, MovementId, RepsLeft, Rpe, Scale, Session, SessionFeel, SessionId, SetGroup,
+                     Soreness, StrengthBlock, Superset, TimeStr, Unit, UsedLoad)
 from .replay import build, load_profile
 from .strength import plan_item
 from .workout import SchemaError, _metcon, find_day, normalize_day
@@ -271,14 +271,14 @@ def add_strength_benchmark(
     reps: Annotated[int, Field(ge=1, le=50)],
     load: Annotated[Optional[Load], Field(description="Weight lifted (see Load). For bodyweight movements: weight added, omit if none.")] = None,
     assistance: Annotated[Optional[Load], Field(description="Bodyweight movements only.")] = None,
-    rpe: Annotated[Rpe, Field(description="How hard that set was. A personal best / max set is 10.")] = 10,
+    reps_left: Annotated[RepsLeft, Field(description="Reps left in the tank on that set. A personal best / max set is 0.")] = 0,
     date: Annotated[Optional[date], Field(description="When it was done (YYYY-MM-DD). Omit if unknown.")] = None,
     note: Optional[str] = None,
 ) -> dict[str, Any]:
     """Record a known best or test set outside a logged session (e.g. "squat 225lb x3", "max 12 pull-ups").
     It seeds the strength model. For sets done in a class, use log_strength_result instead."""
     entry: dict = {"movement": movement, "load": round(_signed_load(movement, load, assistance), 2),
-                   "reps": reps, "rpe": rpe}
+                   "reps": reps, "rpe": 10 - reps_left}
     if date:
         entry["date"] = date
     if note:
@@ -443,13 +443,15 @@ def predict_strength_load(
     movement: MovementId,
     reps: Annotated[int, Field(ge=1, le=50, description="Target reps per set.")],
     sets: Annotated[int, Field(ge=1, le=12, description="Number of sets at the same load.")] = 4,
-    target_rpe: Annotated[Rpe, Field(description="Desired RPE of the LAST set.")] = 8,
+    target_reps_left: Annotated[int, Field(ge=0, le=5, description=(
+        "How many reps should still be possible at the end of the LAST set. 2 = solid training set, "
+        "1 = heavy, 0 = to the limit, 3-4 = easy/technique."))] = 2,
     date: OptDay = None,
 ) -> dict[str, Any]:
-    """Recommended load for sets × reps at a target RPE, without needing a stored program.
-    Bodyweight movements return whether to add weight, go unweighted, or use assistance."""
+    """Recommended load for sets × reps leaving a chosen number of reps in reserve, without needing a
+    stored program. Bodyweight movements return whether to add weight, go unweighted, or use assistance."""
     item = {"movement": movement, "reps_lo": float(reps), "reps_hi": float(reps), "per_side": False,
-            "drop": False, "sets": sets, "rpe": float(target_rpe), "main": False, "superset": None}
+            "drop": False, "sets": sets, "rpe": 10.0 - target_reps_left, "main": False, "superset": None}
     return planjson.strength_item(plan_item(_athlete(date), item, "volume"))
 
 
@@ -615,7 +617,7 @@ def _events(day: date, session_id: Optional[str] = None) -> list[dict]:
             st = e["set"]
             row.update(movement=e["movement"], performance_vs_expected_pct=round(s * 100, 1),
                        best_set={"load_kg": st["load"], "reps": st["reps"],
-                                 "rpe": None if st["rir"] is None else 10 - st["rir"]},
+                                 "reps_left": st["rir"]},
                        estimated_1rm_kg={"before": round(e["e1rm_before"], 1), "after": round(e["e1rm_after"], 1)})
         elif e["kind"] == "metcon":
             row.update(format=e["format"], performance_vs_expected_pct=round(-s * 100, 1),
@@ -666,7 +668,7 @@ def log_strength_result(
     movement: MovementId,
     sets: Annotated[list[SetGroup], Field(min_length=1, description=(
         "What was actually done, in order. \"60kg 10 reps x 4 sets, last set RPE 8\" → "
-        "[{reps: 10, count: 4, load: {value: 60, unit: kg}, rpe: 8}]."))],
+        "[{reps: 10, count: 4, load: {value: 60, unit: kg}, reps_left: 2}]."))],
 ) -> dict[str, Any]:
     """Record the sets done for ONE strength movement in a session. Logging the same movement in the
     same session again replaces the earlier entry. Returns how the result compared with the model's
@@ -678,6 +680,8 @@ def log_strength_result(
         for i in range(g.count):
             s: dict = {"load": kg, "reps": g.reps}
             if i == g.count - 1:
+                if g.reps_left is not None:
+                    s["rpe"] = 10 - g.reps_left
                 if g.rpe is not None:
                     s["rpe"] = g.rpe
                 if g.feel is not None:
@@ -689,7 +693,7 @@ def log_strength_result(
     out.update(date=date.isoformat(), session_id=session_id, movement=movement, sets_recorded=len(expanded),
                model_update=updates[-1] if updates else None)
     if not updates:
-        out["note"] = ("stored and counted toward fatigue, but no rpe/feel was given (or the movement has no "
+        out["note"] = ("stored and counted toward fatigue, but reps_left was not given (or the movement has no "
                        "strength model), so ability estimates did not change")
     return out
 
@@ -704,7 +708,8 @@ def log_metcon_result(
     section: Annotated[Optional[int], Field(ge=1, description="Required when the block has sections: which one (1-based).")] = None,
     loads: Annotated[list[UsedLoad], Field(description="Weights actually used. Omit a movement only if the recommended load was used.")] = [],
     picks: Annotated[list[MovementId], Field(description="For choice/scale items: the option actually done.")] = [],
-    rpe: Annotated[Optional[Rpe], Field(description="Overall effort of this workout; 9-10 = all-out.")] = None,
+    effort: Optional[Effort] = None,
+    rpe: Annotated[Optional[Rpe], Field(description="Alternative to `effort`, only if the athlete gives a 1-10 number.")] = None,
     load_feel: Annotated[Optional[Literal["light", "good", "heavy"]], Field(description="How the weights felt for this workout.")] = None,
     erg_efforts: Annotated[list[ErgEffort], Field(description="Optional measured machine pieces inside the workout.")] = [],
 ) -> dict[str, Any]:
@@ -728,6 +733,10 @@ def log_metcon_result(
     if result.type not in allowed:
         raise ApiError(f"result.type '{result.type}' does not fit a {scored['format']} workout; use one of {list(allowed)}")
 
+    if effort is not None and rpe is not None:
+        raise ApiError("give effort or rpe, not both")
+    if effort is not None:
+        rpe = EFFORT_RPE[effort]
     kg, chosen = _loads_picks(scored, loads, picks)
     res: dict = {}
     if result.type == "time":
@@ -792,11 +801,15 @@ def log_erg_result(
 def log_session_summary(
     date: Day,
     session_id: SessionId,
-    srpe: Annotated[int, Field(ge=1, le=10, description="How hard the whole class was: 1 very easy … 10 maximal.")],
+    feel: Optional[SessionFeel] = None,
+    srpe: Annotated[Optional[int], Field(ge=1, le=10, description="Alternative to `feel`, only if the athlete gives a 1-10 number.")] = None,
     duration_min: Annotated[float, Field(gt=0, le=300, description="Total minutes of the class including rests.")] = 50,
 ) -> dict[str, Any]:
-    """Record the overall load of a session (session RPE × duration). Drives systemic fatigue and the
+    """Record the overall load of a session (how hard × how long). Drives systemic fatigue and the
     weekly load ratio. Replaces the earlier summary for that session."""
+    if (feel is None) == (srpe is None):
+        raise ApiError("give exactly one of feel / srpe")
+    srpe = srpe if srpe is not None else SESSION_SRPE[feel]
     _session(date, session_id)
     out = _upsert(date, session_id, lambda r: False, None, {"srpe": srpe, "duration_min": duration_min})
     out.update(date=date.isoformat(), session_id=session_id, srpe=srpe, duration_min=duration_min)

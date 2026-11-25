@@ -99,7 +99,7 @@ def test_log_metcon_then_plan_changes_and_review_reports(root):
     out = api.call("log_metcon_result", {"date": "2026-11-26", "session_id": "cardio",
                                          "result": {"type": "time", "time": fast}, "rpe": 9.5, "load_feel": "light"})
     assert out["model_updates"][0]["performance_vs_expected_pct"] > 15
-    api.call("log_session_summary", {"date": "2026-11-26", "session_id": "cardio", "srpe": 9, "duration_min": 25})
+    api.call("log_session_summary", {"date": "2026-11-26", "session_id": "cardio", "feel": "hard", "duration_min": 25})
     review = api.call("get_review", {"date": "2026-11-26"})
     assert review["updates"][0]["capacity_pct"]["after"] > review["updates"][0]["capacity_pct"]["before"]
     sat = api.call("get_plan", {"date": "2026-11-28", "session_ids": ["cardio"]})
@@ -179,6 +179,30 @@ def test_predictions_are_pure_and_repeatable(root):
     back = api.call("predict_erg", {"machine": "row", "time": erg["time"]["text"]})
     assert back["cal"] == pytest.approx(30, abs=0.6)
     assert not list((root / "data" / "logs").iterdir())
+
+
+def test_effort_is_reported_as_concrete_facts_not_a_score(root):
+    by_left = api.call("log_strength_result", bench({"value": 60, "unit": "kg"}, reps=5, count=5, reps_left=1))
+    by_rpe = api.call("log_strength_result", bench({"value": 60, "unit": "kg"}, reps=5, count=5, rpe=9))
+    assert by_left["model_update"] == by_rpe["model_update"]              # 1개 남음 == RPE 9
+    assert by_left["model_update"]["best_set"]["reps_left"] == 1
+    with pytest.raises(ValidationError):
+        api.call("log_strength_result", bench({"value": 60, "unit": "kg"}, reps_left=1, rpe=9))
+    base = {"date": "2026-11-26", "session_id": "cardio", "result": {"type": "time", "time": "12:00"}}
+    with pytest.raises(api.ApiError, match="effort or rpe"):
+        api.call("log_metcon_result", {**base, "effort": "hard", "rpe": 9})
+    with pytest.raises(ValidationError):
+        api.call("log_metcon_result", {**base, "effort": "kind of hard"})
+    hard = api.call("log_metcon_result", {**base, "effort": "all_out"})["model_updates"][0]
+    eased = api.call("log_metcon_result", {**base, "effort": "controlled"})["model_updates"][0]
+    assert eased["performance_vs_expected_pct"] > hard["performance_vs_expected_pct"]   # 여유 있게 낸 같은 기록이 더 좋은 신호
+    with pytest.raises(api.ApiError, match="exactly one"):
+        api.call("log_session_summary", {"date": "2026-11-26", "session_id": "cardio"})
+    plan = api.call("get_plan", {"date": "2026-11-26", "session_ids": ["weight"]})
+    assert plan["sessions"][0]["blocks"][0]["items"][1]["target_reps_left_last_set"] == 1.5
+    assert "1~2개 더 할 수 있는 정도" in plan["markdown"] and "RPE" not in plan["markdown"]
+    assert api.call("predict_strength_load", {"movement": "bench_press", "reps": 5, "target_reps_left": 0})["load"]["kg"] > \
+        api.call("predict_strength_load", {"movement": "bench_press", "reps": 5, "target_reps_left": 4})["load"]["kg"]
 
 
 # ── MCP 로 노출된 모습 ───────────────────────────────────
