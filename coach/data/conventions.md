@@ -18,6 +18,8 @@ gym board or the athlete says into tool inputs exactly; the engine does all arit
     controlled (could hold the pace a few more minutes) / easy (could talk).
   - Whole class → `feel`: light / moderate / hard / max.
   - Use the numeric `rpe` / `srpe` fields only when the athlete volunteers a number.
+  - Did not finish inside the time cap → result type `capped`; give `rounds_done` only if the athlete says
+    how far they got (omit otherwise).
   - Never invent any of these. If not given, log without it (the work still counts toward fatigue) and ask once.
 - Never estimate or adjust numbers yourself. To answer "what should I lift / how fast", call a
   prediction tool and relay its numbers (the `markdown` field is ready to show).

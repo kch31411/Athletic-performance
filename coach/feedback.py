@@ -10,7 +10,7 @@ from datetime import date
 from . import catalog as C
 from . import hyrox
 from .athlete import Athlete
-from .metcon import evaluate
+from .metcon import LOADED, evaluate, loadpref_h
 from .strength import set_fatigue
 
 FEEL_RIR = {"easy": 4.0, "good": 2.0, "hard": 0.5, "fail": 0.0}
@@ -184,7 +184,18 @@ def _apply_one_metcon(athlete: Athlete, block: dict, res: dict, tag: str) -> dic
     team = block["team"]["size"] > 1
     noise = 0.12 + (0.10 if team else 0.0)
     rpe = res.get("rpe")
-    if fmt == "for_time" and (res.get("time") is not None or res.get("rounds_done") is not None):
+    dnf = bool(res.get("dnf")) or res.get("rounds_done") is not None
+    if fmt == "for_time" and dnf and res.get("rounds_done") is None:
+        # 어디까지 갔는지 모르는 DNF: '타임캡보다는 오래 걸린다'는 하한 정보로만 쓴다
+        pred, cap = ev["pred"]["elapsed_s"], block.get("time_cap_s")
+        if cap and pred < cap:
+            before = athlete.b.value("met")
+            athlete.b.observe(ev["h"], math.log(cap / pred), noise, bound_only=True)
+            athlete.count("met")
+            athlete.events.append({"kind": "metcon", "tag": tag, "format": fmt, "surprise": math.log(cap / pred),
+                                   "pred_s": pred, "actual_s": cap, "met_before": before,
+                                   "met_after": athlete.b.value("met")})
+    elif fmt == "for_time" and (res.get("time") is not None or res.get("rounds_done") is not None):
         pred = ev["pred"]["elapsed_s"]
         if res.get("rounds_done") is not None:    # 타임캡에 걸림
             n = len(block["rep_scheme"]) if block.get("rep_scheme") else (block.get("rounds") or 1)
@@ -215,16 +226,20 @@ def _apply_one_metcon(athlete: Athlete, block: dict, res: dict, tag: str) -> dic
     feel = res.get("load_feel")
     if feel and feel not in ("light", "good", "heavy"):
         raise LogError(f"load_feel 은 light/good/heavy: {feel}")
-    # 무게 선호 학습: 처방보다 무겁게/가볍게 들었는지 + 그 무게가 어땠는지
-    chosen = 0.0
-    if res.get("loads"):
-        planned = evaluate(athlete, block, picks=res.get("picks"))["loads"]
-        ratios = [math.log(w / planned[m]) for m, w in res["loads"].items()
-                  if planned.get(m) and w > 0 and C.movement(m)["implement"] != "bodyweight"]
-        chosen = sum(ratios) / len(ratios) if ratios else 0.0
-    if feel or chosen:
-        shift = chosen + {"light": 0.06, "good": 0.0, "heavy": -0.06, None: 0.0}[feel]
-        athlete.b.observe({"loadpref": 1.0}, shift, 0.10 if feel else 0.20)
+    # 무게 성향 학습(기구별): '적절했을 무게' = 실제 쓴 무게 × 느낌 보정. 처방 대비 그 비율을 관측한다.
+    #   가벼웠다 → 쓴 무게보다 12% 위, 무거웠다 → 12% 아래, 완주 못 했으면 5% 더 아래.
+    planned = evaluate(athlete, block, picks=res.get("picks"))["loads"]
+    used = res.get("loads") or {}
+    adjust = {"light": 0.12, "good": 0.0, "heavy": -0.12, None: 0.0}[feel] - (0.05 if dnf else 0.0)
+    by_imp: dict[str, list[float]] = {}
+    for m, w0 in planned.items():
+        imp = C.movement(m)["implement"]
+        if imp in LOADED and w0 > 0 and (m in used or feel or dnf):
+            by_imp.setdefault(imp, []).append(math.log(used.get(m, w0) / w0))
+    for imp, ratios in by_imp.items():
+        shift = sum(ratios) / len(ratios) + adjust
+        first = next(m for m in planned if C.movement(m)["implement"] == imp)
+        athlete.b.observe(loadpref_h(first), shift, 0.10 if (feel or dnf) else 0.20)
     athlete.add_fatigue(ev["stress"])
     return ev
 

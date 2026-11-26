@@ -22,6 +22,11 @@ STRESS_PER_MAXSET = 1.5      # 한계 세트 1개 분량의 볼륨 = 고강도 �
 ERG_STRESS_PER_MIN = 0.15
 
 
+def loadpref_h(mid: str) -> dict[str, float]:
+    """메트콘 무게 성향: 전체 + 기구별."""
+    return {"loadpref": 1.0, f"loadpref.imp:{C.movement(mid)['implement']}": 1.0}
+
+
 def rest_frac(d: float) -> float:
     """세트 난이도 d 에 따른 '작업 시간 대비 휴식 시간' 비율."""
     if d <= 0.2:
@@ -317,12 +322,12 @@ def choose_loads(athlete: Athlete, rounds: list[list[dict]], items: list[dict], 
             total[mid] = total.get(mid, 0.0) + reps + 0.25 * others
             set_eff[mid] = max(set_eff.get(mid, 0.0), reps + 0.5 * others)
 
-    pref = athlete.b.value("loadpref")
     raw: dict[str, float] = {}
     for mid in total:
         pct = INTENT_PCT[intensity] + (0.03 if team_rest else 0.0)
         pct -= 0.08 * math.log2(max(total[mid], 1.0) / 30.0)
         pct -= 0.03 * math.log2(max(set_eff[mid], 1.0) / 9.0)
+        pref, _ = athlete.b.predict(loadpref_h(mid))
         pct = min(max(pct * math.exp(pref), 0.25), INTENT_CAP[intensity])
         # 아직 기록이 없는 동작은 추정이 불확실한 만큼 보수적으로 잡는다
         raw[mid] = pct * athlete.one_rm(mid) * math.exp(-0.5 * athlete.log1rm(mid, today=False)[1])

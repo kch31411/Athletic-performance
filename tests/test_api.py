@@ -109,6 +109,17 @@ def test_log_metcon_then_plan_changes_and_review_reports(root):
     assert t(sat) < t(sat0)                                                # 빨랐던 기록 → 더 빠른 목표
 
 
+def test_dnf_with_heavy_feel_lowers_barbell_loads_only(root):
+    base = {"date": "2026-11-26", "session_id": "cardio"}
+    out = api.call("log_metcon_result", {**base, "result": {"type": "capped"}, "effort": "all_out",
+                                         "load_feel": "heavy"})           # 어디까지 갔는지 모르는 DNF
+    assert api.call("get_log", {"date": "2026-11-26"})["log"]["sessions"][0]["results"][0]["dnf"] is True
+    factors = api.call("get_status", {"date": "2026-11-27"})["factors"]
+    assert factors["loadpref.imp:barbell"]["value"] < -0.08               # 바벨 성향은 내려가고
+    assert abs(factors.get("loadpref.imp:dumbbell", {"value": 0})["value"]) < 0.01   # 덤벨은 그대로
+    assert all(u["performance_vs_expected_pct"] <= 0 for u in out["model_updates"])
+
+
 def test_sectioned_block_logs_each_section(root):
     base = {"date": "2026-11-28", "session_id": "cardio"}
     api.call("log_metcon_result", {**base, "section": 2, "result": {"type": "time", "time": "12:00"}})

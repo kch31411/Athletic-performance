@@ -238,7 +238,9 @@ class TimeResult(Strict):
 class CappedResult(Strict):
     """Hit the time cap before finishing a for_time workout."""
     type: Literal["capped"]
-    rounds_done: Annotated[float, Field(gt=0, description="Rounds completed, counted the same way as the block's rounds (2.5 = two and a half).")]
+    rounds_done: Annotated[Optional[float], Field(gt=0, description=(
+        "Rounds completed, counted the same way as the block's rounds (2.5 = two and a half). "
+        "Omit if the athlete does not know how far they got; never guess."))] = None
 
 
 class RoundsResult(Strict):

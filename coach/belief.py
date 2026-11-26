@@ -18,7 +18,8 @@
     hyx.sta:<station>   HYROX 스테이션별 편차 (기술·요령 등 다른 능력치로 설명 안 되는 부분)
     hyx.run             HYROX 스테이션 사이 러닝(다리가 무거운 상태)의 편차
     cond                오늘의 컨디션 (매일 초기화)
-    loadpref            메트콘 무게 선호 (가볍게/무겁게 피드백으로 학습)
+    loadpref            메트콘 무게 선호 — 전체 (가볍게/무겁게 피드백으로 학습)
+    loadpref.imp:<기구>  기구별 편차 (barbell, dumbbell, kettlebell). 덤벨에서 본 성향을 바벨에 그대로 옮기지 않는다
 """
 from __future__ import annotations
 
@@ -42,7 +43,8 @@ PRIORS: dict[str, tuple[float, float]] = {
     "hyx.sta": (0.15, 0.0030),
     "hyx.run": (0.06, 0.0030),
     "cond": (0.03, 0.0),
-    "loadpref": (0.15, 0.0),
+    "loadpref.imp": (0.14, 0.0),
+    "loadpref": (0.06, 0.0),
 }
 
 

@@ -3,6 +3,7 @@ sessions:
 - id: cardio
   results:
   - block: 1
+    dnf: true
     loads:
       hang_clean_and_jerk: 43.09
       front_squat: 43.09

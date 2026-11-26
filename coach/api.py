@@ -754,7 +754,9 @@ def log_metcon_result(
     if result.type == "time":
         res["time"] = parse_time(result.time)
     elif result.type == "capped":
-        res["rounds_done"] = result.rounds_done
+        res["dnf"] = True
+        if result.rounds_done is not None:
+            res["rounds_done"] = result.rounds_done
     elif result.type == "rounds":
         res.update(rounds=result.rounds, reps=result.extra_reps)
     elif result.type == "rotation":

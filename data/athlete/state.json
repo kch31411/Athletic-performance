@@ -177,8 +177,20 @@
       "sd": 0.15
     },
     "loadpref": {
-      "value": 0.2797,
-      "sd": 0.0768
+      "value": 0.0534,
+      "sd": 0.0552
+    },
+    "loadpref.imp:barbell": {
+      "value": 0.0804,
+      "sd": 0.0892
+    },
+    "loadpref.imp:dumbbell": {
+      "value": 0.2104,
+      "sd": 0.1161
+    },
+    "loadpref.imp:kettlebell": {
+      "value": 0.0,
+      "sd": 0.14
     },
     "met": {
       "value": 0.0519,

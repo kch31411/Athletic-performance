@@ -11,7 +11,7 @@ from coach import render
 from coach.athlete import Athlete
 from coach.belief import Belief
 from coach.feedback import apply_erg, apply_strength, parse_time
-from coach.metcon import evaluate, suggest_split
+from coach.metcon import evaluate, loadpref_h, suggest_split
 from coach.replay import build
 from coach.strength import plan_block, set_fatigue
 from coach.workout import SchemaError, find_day, normalize_day
@@ -169,7 +169,9 @@ def test_choosing_heavier_loads_than_prescribed_raises_future_prescriptions(root
         {"block": 1, "my_rounds": 5, "loads": {"db_push_press": planned * 1.4, "db_front_squat": planned * 1.4},
          "load_feel": "good"}]}]})
     after = build(root, until=date(2026, 11, 28))
-    assert after.b.value("loadpref") > 0.1
+    pref = lambda m: after.b.predict(loadpref_h(m))[0]
+    assert pref("db_push_press") > 0.1                       # 덤벨 성향은 크게 올라가고
+    assert 0 < pref("clean_and_jerk") < pref("db_push_press") / 2   # 바벨로는 조금만 옮겨간다
     sat = find_day(root, date(2026, 11, 28), "m")["sessions"][1]["blocks"][0]
     before = build(root, until=date(2026, 11, 28), skip_sessions_on=date(2026, 11, 25))
     assert (evaluate(after, sat)["loads"]["devil_press"] >= evaluate(before, sat)["loads"]["devil_press"])

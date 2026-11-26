@@ -96,7 +96,7 @@ sessions:
     duration_min: 20
     results:
       - block: 1               # 세션 안의 몇 번째 블록인지 (1부터)
-        time: "12:34"          # for_time 기록(팀이면 팀 기록). 타임캡에 걸렸으면 rounds_done: 2.5
+        time: "12:34"          # for_time 기록(팀이면 팀 기록). 타임캡에 걸렸으면 dnf: true (+ 아는 경우 rounds_done: 2.5)
         loads: {hang_clean_and_jerk: 35, front_squat: 35}   # 실제 사용 무게 (처방과 같으면 생략)
         picks: [goblet_squat]  # choice/scale 에서 고른 동작
         rpe: 9

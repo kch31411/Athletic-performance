@@ -455,7 +455,9 @@ def status_md(athlete: Athlete) -> str:
                         ("짧은(6분↓)", "met.dur:short"), ("중간(6~18분)", "met.dur:medium"),
                         ("긴(18분↑)", "met.dur:long")):
         out.append(f"- {label}: {pct(b.value(name))} (±{b.sd(name) * 100:.0f}%)")
-    out.append(f"- 메트콘 무게 선호 보정: {pct(b.value('loadpref'))}")
+    out.append("- 메트콘 무게 성향(처방 대비): " + ", ".join(
+        f"{ko} {pct(b.predict({'loadpref': 1.0, f'loadpref.imp:{imp}': 1.0})[0])}"
+        for imp, ko in (("barbell", "바벨"), ("dumbbell", "덤벨"), ("kettlebell", "케틀벨"))))
 
     race = hyrox.predict(athlete, "open")
     out += ["", "## HYROX 오픈 싱글", "",
