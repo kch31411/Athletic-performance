@@ -1,0 +1,10 @@
+date: 2026-11-26
+sessions:
+- id: cardio
+  results:
+  - block: 1
+    loads:
+      hang_clean_and_jerk: 43.09
+      front_squat: 43.09
+    rpe: 10.0
+    load_feel: heavy

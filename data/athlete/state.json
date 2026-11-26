@@ -177,8 +177,8 @@
       "sd": 0.15
     },
     "loadpref": {
-      "value": 0.2495,
-      "sd": 0.12
+      "value": 0.2797,
+      "sd": 0.0768
     },
     "met": {
       "value": 0.0519,
@@ -240,6 +240,10 @@
       "value": -0.0081,
       "sd": 0.0687
     },
+    "str.mov:hang_clean_and_jerk": {
+      "value": 0.0,
+      "sd": 0.1
+    },
     "str.mov:pull_up": {
       "value": 0.0,
       "sd": 0.1
@@ -290,12 +294,15 @@
     }
   },
   "fatigue": {
-    "squat": 3.47,
+    "squat": 7.69,
+    "hinge": 1.78,
     "push_h": 0.32,
-    "push_v": 3.43,
+    "push_v": 5.8,
     "pull_h": 0.24,
+    "pull_v": 5.39,
+    "olympic": 5.93,
     "plyo": 1.06
   },
-  "systemic_fatigue": 0.58,
+  "systemic_fatigue": 1.75,
   "acwr": null
 }
