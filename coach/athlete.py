@@ -22,6 +22,7 @@ DEFAULT_EQUIPMENT = {
     "barbell_unit": "kg",          # kg | lb (lb 면 45lb 바, 5lb 단위로 처방)
     "barbell_kg": 20.0,
     "barbell_step_kg": 2.5,
+    "barbell_plates": None,        # 쓸 수 있는 원판 무게(한쪽, barbell_unit 기준). 예: [25, 45]. None = 제한 없음
     "dumbbells_kg": [2, 3, 4, 5, 6, 7, 8, 9, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35, 40],
     "kettlebells_kg": [4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32],
 }
@@ -169,11 +170,24 @@ class Athlete:
         return m.get("unbroken", 30) * C.interp(C.UNBROKEN_MULT, self.level)
 
     # ── 장비 반올림 ──────────────────────────────────────
+    def barbell_options(self) -> list[float]:
+        """가진 원판으로 만들 수 있는 바벨 총중량(kg) 목록: 바 + 양쪽 같은 원판 조합."""
+        if getattr(self, "_bar_opts", None) is None:
+            eq = self.profile["equipment"]
+            k = LB if eq["barbell_unit"] == "lb" else 1.0
+            sides = {0.0}
+            for _ in range(6):                          # 한쪽에 원판 6장까지
+                sides |= {round(s + p, 3) for s in sides for p in eq["barbell_plates"]}
+            self._bar_opts = sorted(eq["barbell_kg"] + 2.0 * s * k for s in sides)
+        return self._bar_opts
+
     def round_load(self, mid: str, ext: float) -> float:
         m = C.movement(mid)
         eq = self.profile["equipment"]
         imp = m["implement"]
         if imp == "barbell":
+            if eq.get("barbell_plates"):               # 실제로 끼울 수 있는 조합 중 가장 가까운 무게
+                return min(self.barbell_options(), key=lambda w: (abs(w - ext), w))
             step = 5.0 * LB if eq["barbell_unit"] == "lb" else eq["barbell_step_kg"]
             return max(eq["barbell_kg"], round(ext / step) * step)
         if imp in ("dumbbell", "kettlebell"):

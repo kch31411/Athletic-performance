@@ -39,7 +39,7 @@
 | R | `get_conventions` | 칠판·운동 보고를 입력으로 옮기는 규칙. 쓰기 전에 한 번 읽는다 |
 | R | `list_movements` / `find_movement` | 동작 카탈로그, 이름 → id |
 | R | `get_profile` | 프로필 |
-| W | `update_profile` | 체중·수준·주 머신·바벨 단위 |
+| W | `update_profile` | 체중·수준·주 머신·바벨 단위·쓸 수 있는 원판(처방을 실제로 만들 수 있는 무게로 제한) |
 | W | `add_strength_benchmark` / `add_erg_benchmark` | 알고 있는 기록(PB, 하프마라톤 등) |
 | W | `save_program_day` | 하루치 프로그램 저장(그 날짜를 통째로 교체) |
 | R | `get_program_day` / `list_program_days` | 저장된 프로그램, 기록 여부 |

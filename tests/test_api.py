@@ -134,6 +134,22 @@ def test_checkin_and_benchmark_and_profile(root):
     assert "lb" in api.call("predict_strength_load", {"movement": "bench_press", "reps": 5})["load"]["display"]
 
 
+def test_barbell_prescriptions_respect_available_plates(root):
+    api.call("update_profile", {"barbell_unit": "lb", "barbell_plates": [25, 45]})
+    sides = {0}
+    for _ in range(6):
+        sides |= {s + p for s in sides for p in (25, 45)}
+    buildable = {45 + 2 * s for s in sides}                               # 45, 95, 135, 145, 185, ...
+    for reps in (3, 8, 15):
+        out = api.call("predict_strength_load", {"movement": "back_squat", "reps": reps})
+        assert out["load"]["lb"] in buildable
+        assert out["load_range"]["low"]["lb"] in buildable and out["load_range"]["high"]["lb"] in buildable
+    plan = api.call("get_plan", {"date": "2026-11-26", "session_ids": ["cardio"]})
+    assert plan["sessions"][0]["blocks"][0]["items"][0]["load"]["lb"] in (45, 95)     # 85lb 는 못 만든다
+    assert api.call("update_profile", {"barbell_plates": []})["profile"]["barbell_plates"] is None
+    assert api.call("get_plan", {"date": "2026-11-26", "session_ids": ["cardio"]}) != plan
+
+
 def test_save_program_day_roundtrip_and_validation(root):
     day = {"date": "2026-12-01", "gym": "PERE", "sessions": [
         {"id": "weight", "title": "WEIGHT", "focus": "상체 스트렝스", "blocks": [

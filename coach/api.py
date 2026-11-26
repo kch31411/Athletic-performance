@@ -215,6 +215,7 @@ def get_profile() -> dict[str, Any]:
     p = normalize_profile(raw)
     return {"sex": p["sex"], "bodyweight_kg": p["bodyweight_kg"], "level": raw.get("level", "novice"),
             "preferred_machine": p["preferred_machine"], "barbell_unit": p["equipment"]["barbell_unit"],
+            "barbell_plates": p["equipment"]["barbell_plates"],
             "benchmarks": _jsonable(p["benchmarks"])}
 
 
@@ -227,6 +228,10 @@ def update_profile(
         "beginner 0.6/0.4, novice 0.85/0.5, intermediate 1.15/0.7, advanced 1.45/0.9."))] = None,
     preferred_machine: Annotated[Optional[Machine], Field(description='Machine used when the board just says "machine".')] = None,
     barbell_unit: Annotated[Optional[Unit], Field(description="Unit the athlete loads barbells in; prescriptions are rounded and displayed in it.")] = None,
+    barbell_plates: Annotated[Optional[list[Annotated[float, Field(gt=0)]]], Field(description=(
+        "Plate sizes actually available, weight of ONE plate in barbell_unit (e.g. [10, 25, 45]). Barbell "
+        "prescriptions are then limited to loads that can really be built (bar + the same plates on both "
+        "sides). Pass an empty list to remove the restriction."))] = None,
 ) -> dict[str, Any]:
     """Change profile fields. Only the fields you pass are changed."""
     raw = _read(_profile_path())
@@ -237,6 +242,9 @@ def update_profile(
             raw[key] = changed[key] = val
     if barbell_unit is not None:
         raw.setdefault("equipment", {})["barbell_unit"] = changed["barbell_unit"] = barbell_unit
+    if barbell_plates is not None:
+        plates = sorted(set(barbell_plates)) or None
+        raw.setdefault("equipment", {})["barbell_plates"] = changed["barbell_plates"] = plates
     if not changed:
         raise ApiError("nothing to change: pass at least one field")
     _write_checked(_profile_path(), raw, "# 선수 프로필 — 모델의 출발점. 기록이 쌓이면 기록이 우선한다.\n")
