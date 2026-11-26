@@ -120,6 +120,14 @@ def test_dnf_with_heavy_feel_lowers_barbell_loads_only(root):
     assert all(u["performance_vs_expected_pct"] <= 0 for u in out["model_updates"])
 
 
+def test_capped_progress_on_a_descending_scheme_uses_round_sizes(root):
+    base = {"date": "2026-11-26", "session_id": "cardio"}
+    out = api.call("log_metcon_result", {**base, "result": {"type": "capped", "rounds_done": 2.33}, "effort": "all_out"})
+    u = out["model_updates"][0]
+    # 21-15-9 에서 2.33라운드는 일의 90% 가까이 한 것 → 완주 환산 16~17분 (라운드를 똑같이 치면 19분대가 나온다)
+    assert 15 * 60 < u["actual_time"]["seconds"] < 17.5 * 60
+
+
 def test_sectioned_block_logs_each_section(root):
     base = {"date": "2026-11-28", "session_id": "cardio"}
     api.call("log_metcon_result", {**base, "section": 2, "result": {"type": "time", "time": "12:00"}})

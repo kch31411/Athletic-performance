@@ -2,7 +2,7 @@
   "as_of": "2026-11-26",
   "observations": {
     "eng": 1,
-    "met": 1,
+    "met": 2,
     "str:hinge": 1,
     "str:push_h": 1,
     "str:push_v": 1,
@@ -193,24 +193,24 @@
       "sd": 0.14
     },
     "met": {
-      "value": 0.0519,
-      "sd": 0.1556
+      "value": 0.0349,
+      "sd": 0.1325
     },
     "met.cat:G": {
-      "value": 0.0047,
+      "value": 0.0048,
       "sd": 0.0994
     },
     "met.cat:W": {
-      "value": 0.0083,
-      "sd": 0.098
+      "value": 0.004,
+      "sd": 0.0958
     },
     "met.dur:long": {
       "value": 0.0,
       "sd": 0.08
     },
     "met.dur:medium": {
-      "value": 0.0083,
-      "sd": 0.0775
+      "value": 0.0056,
+      "sd": 0.0764
     },
     "met.dur:short": {
       "value": 0.0,

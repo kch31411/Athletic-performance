@@ -4,6 +4,7 @@ sessions:
   results:
   - block: 1
     dnf: true
+    rounds_done: 2.33
     loads:
       hang_clean_and_jerk: 43.09
       front_squat: 43.09

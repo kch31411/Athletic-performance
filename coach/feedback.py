@@ -200,7 +200,15 @@ def _apply_one_metcon(athlete: Athlete, block: dict, res: dict, tag: str) -> dic
         if res.get("rounds_done") is not None:    # 타임캡에 걸림
             n = len(block["rep_scheme"]) if block.get("rep_scheme") else (block.get("rounds") or 1)
             cap = parse_time(res["time"]) if res.get("time") is not None else block["time_cap_s"]
-            actual = cap * n / max(float(res["rounds_done"]), 0.25)
+            done = min(float(res["rounds_done"]), float(n))
+            splits = ev["pred"]["round_s"]
+            if not team and len(splits) == n:     # 라운드 크기가 다르면(21-15-9) 예상 라운드 시간으로 진행률 환산
+                full = int(done)
+                part = sum(splits[:full]) + (splits[full] * (done - full) if full < n else 0.0)
+                share = part / sum(splits)
+            else:
+                share = done / n
+            actual = cap / max(share, 0.05)       # 같은 페이스로 끝까지 갔다면 걸렸을 시간
             noise += 0.05
         else:
             actual = parse_time(res["time"])
