@@ -1,0 +1,8 @@
+date: 2026-11-27
+sessions:
+- id: hyfit
+  results:
+  - block: 1
+    loads:
+      db_snatch: 20.0
+    rpe: 8.0
