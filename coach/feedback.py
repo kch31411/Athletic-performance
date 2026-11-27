@@ -22,6 +22,8 @@ REGIONS = {
     "back": ["pull_h", "pull_v"], "등": ["pull_h", "pull_v"],
     "upper": ["push_h", "push_v", "pull_h", "pull_v"], "상체": ["push_h", "push_v", "pull_h", "pull_v"],
     "core": ["core"], "코어": ["core"],
+    "biceps": ["pull_h", "pull_v"], "이두": ["pull_h", "pull_v"],       # 당기는 동작 전반에 영향
+    "triceps": ["push_h", "push_v"], "삼두": ["push_h", "push_v"],
 }
 
 

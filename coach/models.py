@@ -300,5 +300,6 @@ class ErgEffort(Strict):
 
 
 class Soreness(Strict):
-    region: Literal["legs", "chest", "shoulders", "back", "core", "upper"]
+    region: Annotated[Literal["legs", "chest", "shoulders", "back", "core", "upper", "biceps", "triceps"], Field(
+        description="Sore area. biceps affects all pulling, triceps all pressing. 'upper' = whole upper body.")]
     level: Annotated[int, Field(ge=0, le=3, description="0 none, 1 mild, 2 clearly sore, 3 severe.")]
