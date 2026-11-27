@@ -278,17 +278,22 @@ class UsedLoad(Strict):
 
 
 class ErgEffort(Strict):
-    """A measured machine piece: calories or distance covered in a known time."""
+    """A measured machine piece: how long it lasted, plus ONE of calories, distance, or the
+    average pace shown on the monitor in calories per hour."""
     machine: Machine
-    time: TimeStr
+    time: Annotated[TimeStr, Field(description='Duration of the piece as "M:SS".')]
     cal: Annotated[Optional[float], Field(gt=0)] = None
     distance_m: Annotated[Optional[float], Field(gt=0)] = None
-    effort: Annotated[Literal["max", "hard"], Field(description="max = all-out for that duration; hard = strong but not all-out.")] = "max"
+    cal_per_hour: Annotated[Optional[float], Field(gt=100, lt=4000, description=(
+        'Monitor pace, e.g. "시간당 1300칼" → 1300. The server converts it; do not compute calories yourself.'))] = None
+    effort: Annotated[Literal["max", "hard", "submax"], Field(description=(
+        "max = all-out for that duration. hard = strong but not all-out. submax = comfortably below the limit "
+        "(a pace inside a workout that felt controlled or easy): used only as a lower bound on ability."))] = "max"
 
     @model_validator(mode="after")
     def _one(self):
-        if (self.cal is None) == (self.distance_m is None):
-            raise ValueError("give exactly one of cal / distance_m")
+        if sum(x is not None for x in (self.cal, self.distance_m, self.cal_per_hour)) != 1:
+            raise ValueError("give exactly one of cal / distance_m / cal_per_hour")
         if self.distance_m is not None and self.machine == "assault_bike":
             raise ValueError("assault_bike: report cal")
         return self

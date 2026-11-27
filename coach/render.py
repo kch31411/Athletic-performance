@@ -63,7 +63,7 @@ def load_text(mid: str, w: float) -> str:
     if m["implement"] == "dumbbell":
         return f"덤벨 한 손 {kg(w)}kg" if m["hands"] == 2 else f"덤벨 {kg(w)}kg"
     if m["implement"] == "kettlebell":
-        return f"케틀벨 {kg(w)}kg"
+        return f"케틀벨 한 손 {kg(w)}kg" if m["hands"] == 2 else f"케틀벨 {kg(w)}kg"
     return wt(mid, w)
 
 
@@ -298,7 +298,11 @@ def metcon_lines(athlete: Athlete, ev: dict) -> list[str]:
             a0 = first.get("reps", first.get("cal", 0.0))
             a1 = last.get("reps", last.get("cal", 0.0))
             unit = "cal" if first["kind"] == "erg" else "회"
-            amount = f"{num(a0)}{unit}" if a0 == a1 else f"{num(a0)}→{num(a1)}{unit}"
+            share = ev.get("share", 1.0)
+            t0, t1 = a0 / share, a1 / share        # 칠판에 적힌 양(팀 합계)
+            amount = f"{num(t0)}{unit}" if t0 == t1 else f"{num(t0)}→{num(t1)}{unit}"
+            if share < 1.0:
+                amount += f" (내 몫 {num(a0)}{unit})" if a0 == a1 else f" (내 몫 {num(a0)}→{num(a1)}{unit})"
             line = f"- M{i + 1} **{C.ko(st['movement'])}** {amount}"
             if st.get("load") is not None and C.movement(st["movement"])["implement"] != "bodyweight":
                 tail = " (지정 무게)" if it.get("load") is not None else ""

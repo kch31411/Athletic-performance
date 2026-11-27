@@ -128,6 +128,34 @@ def test_capped_progress_on_a_descending_scheme_uses_round_sizes(root):
     assert 15 * 60 < u["actual_time"]["seconds"] < 17.5 * 60
 
 
+def test_submax_machine_pace_is_only_a_lower_bound(root):
+    base = {"date": "2026-11-27", "session_id": "hyrox_engine", "result": {"type": "none"}, "effort": "easy"}
+    cp = lambda: api.call("get_status", {"date": "2026-11-28"})["engine"]["row"]["cal_per_min"]
+    start = cp()
+    slow = api.call("log_metcon_result", {**base, "erg_efforts": [
+        {"machine": "row", "time": "0:40", "cal_per_hour": 700, "effort": "submax"}]})
+    assert slow["model_updates"] == [] and cp() == start                  # 느긋한 페이스는 아무것도 깎지 않는다
+    fast = api.call("log_metcon_result", {**base, "erg_efforts": [
+        {"machine": "row", "time": "0:40", "cal_per_hour": 1800, "effort": "submax"}]})
+    assert fast["model_updates"][0]["performance_vs_expected_pct"] > 0 and cp() > start
+    stored = api.call("get_log", {"date": "2026-11-27"})["log"]["sessions"][0]["results"][0]["ergs"][0]
+    assert stored["cal"] == 20.0 and stored["time"] == 40                 # 1800cal/h × 40초
+    with pytest.raises(ValidationError):
+        api.call("log_erg_result", {"date": "2026-11-27", "effort": {"machine": "row", "time": "0:40", "cal": 15, "cal_per_hour": 1300}})
+
+
+def test_emom_shared_by_a_pair_halves_my_work(root):
+    block = {"type": "metcon", "format": "emom", "interval_s": 120, "rounds": 3,
+             "items": [{"movement": "row", "cal": 30}, {"movement": "burpee", "reps": 30}]}
+    solo = api.call("predict_metcon", {"block": block})
+    pair = api.call("predict_metcon", {"block": {**block, "team": {"size": 2, "style": "split"}}})
+    for s, p in zip(solo["stations"], pair["stations"]):
+        assert p["amount_first_round"] == s["amount_first_round"] / 2
+        assert p["time_first_round"]["seconds"] < s["time_first_round"]["seconds"] * 0.6
+        assert p["amounts_are_my_share_of_team_total"] == 0.5
+    assert "내 몫 15cal" in pair["markdown"]
+
+
 def test_sectioned_block_logs_each_section(root):
     base = {"date": "2026-11-28", "session_id": "cardio"}
     api.call("log_metcon_result", {**base, "section": 2, "result": {"type": "time", "time": "12:00"}})

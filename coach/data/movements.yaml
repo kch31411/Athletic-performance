@@ -29,7 +29,7 @@ side_lunge:         {ko: 사이드 런지, aliases: ["side lunge", "lateral lung
 walking_lunge:      {ko: 워킹 런지, aliases: ["walking lunge", "lunge", "워킹런지", "런지"], implement: dumbbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 1.5}
 db_box_step_up:     {ko: 덤벨 박스 스텝업, aliases: ["db box step up", "dumbbell box step up", "box step up", "박스 스텝업"], implement: dumbbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 2.5}
 db_box_step_over:   {ko: 덤벨 박스 스텝오버, aliases: ["db box step over", "dumbbell box step over", "box step over", "박스 스텝오버"], implement: dumbbell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 3.0}
-kb_box_step_up:     {ko: 케틀벨 박스 스텝업, aliases: ["kb box step up", "kettlebell box step up"], implement: kettlebell, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 2.5}
+kb_box_step_up:     {ko: 케틀벨 박스 스텝업, aliases: ["kb box step up", "kettlebell box step up"], implement: kettlebell, hands: 2, pattern: lunge, cat: W, ref: back_squat, ratio: 0.25, cycle_s: 2.5}
 sandbag_lunge:      {ko: 샌드백 런지, aliases: ["sandbag lunge", "sandbag walking lunge"], implement: other, pattern: lunge, cat: W, speed_mps: 0.7}
 
 # ── 힌지 ──────────────────────────────────────────────────

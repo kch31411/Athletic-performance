@@ -299,6 +299,8 @@ def _erg_entry(e: ErgEffort) -> dict:
     out: dict = {"erg": e.machine, "time": parse_time(e.time), "effort": e.effort}
     if e.cal is not None:
         out["cal"] = e.cal
+    elif e.cal_per_hour is not None:
+        out["cal"] = round(e.cal_per_hour * out["time"] / 3600.0, 2)
     else:
         out["distance_m"] = e.distance_m
     return out

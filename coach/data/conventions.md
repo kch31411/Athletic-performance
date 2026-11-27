@@ -18,6 +18,8 @@ gym board or the athlete says into tool inputs exactly; the engine does all arit
     controlled (could hold the pace a few more minutes) / easy (could talk).
   - Whole class → `feel`: light / moderate / hard / max.
   - Use the numeric `rpe` / `srpe` fields only when the athlete volunteers a number.
+  - Machine pace reported from the monitor ("시간당 1300칼") → `erg_efforts` with `cal_per_hour` and the duration
+    of the piece; `effort`: max only if it was an all-out test, hard if strong, submax if it felt controlled/easy.
   - Did not finish inside the time cap → result type `capped`; give `rounds_done` only if the athlete says
     how far they got (omit otherwise).
   - Never invent any of these. If not given, log without it (the work still counts toward fatigue) and ask once.

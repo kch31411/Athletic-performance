@@ -60,12 +60,15 @@ sessions:
     notes: ["들어오려고 계속 노력하기"]
     assumptions:
       - "2분마다 스테이션 이동, 6스테이션 × 3바퀴 = 36분"
-      - "thruster 40 은 가벼운 덤벨(3/6kg)로 가정"
+      - "2인 1조가 스테이션마다 적힌 양을 나눠서 수행 (2026-11-27 본인 확인)"
+      - "thruster 40 은 덤벨 한 손 3/6kg 두 개 (2026-11-27 본인 확인)"
+      - "kb box step up 은 양손에 하나씩 들고 수행"
     blocks:
       - type: metcon
         format: emom
         interval_s: 120
         rounds: 3
+        team: {size: 2, style: split}
         intensity: moderate
         items:
           - {movement: kb_box_step_up, reps: 20}

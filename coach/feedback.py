@@ -13,6 +13,7 @@ from .athlete import Athlete
 from .metcon import LOADED, evaluate, loadpref_h
 from .strength import set_fatigue
 
+ERG_EFFORT = {"max": (1.0, 0.05), "hard": (0.93, 0.08), "submax": (0.85, 0.08)}
 FEEL_RIR = {"easy": 4.0, "good": 2.0, "hard": 0.5, "fail": 0.0}
 REGIONS = {
     "legs": ["squat", "hinge", "lunge"], "하체": ["squat", "hinge", "lunge"],
@@ -140,21 +141,24 @@ def apply_erg(athlete: Athlete, res: dict, tag: str = "") -> dict | None:
     else:
         raise LogError(f"머신 기록에는 cal 또는 distance_m 이 필요: {res}")
     effort = res.get("effort", "max")
-    noise = 0.05
-    if effort != "max":
-        rate /= 0.93
-        noise = 0.08
+    if effort not in ERG_EFFORT:
+        raise LogError(f"effort 는 {sorted(ERG_EFFORT)} 중 하나: {effort}")
+    frac, noise = ERG_EFFORT[effort]             # 그 노력으로 낸 출력 / 전력 출력
+    rate /= frac
     pred = athlete.erg_rate(mod, t)
     resid = math.log(rate / pred)
     if run_ratio is not None:                      # 러닝은 속도 비 자체를 엔진 관측으로 쓴다
-        resid = math.log(run_ratio / (0.93 if effort != "max" else 1.0))
+        resid = math.log(run_ratio / frac)
         noise += 0.02
+    bound = effort == "submax"                     # 여유 있게 낸 페이스: '최소 이만큼'이라는 하한
+    if bound and resid <= 0:
+        return None
     a = athlete.ana_sec() / max(t, 15.0)
     h = dict(athlete.erg_h(mod))
     h["cond"] = 1.0
     h["ana"] = a / (1.0 + a)
     before = athlete.erg_cp(mod, today=False) * 60.0
-    athlete.b.observe(h, resid, noise)
+    athlete.b.observe(h, resid, noise, bound_only=bound)
     athlete.count("eng")
     event = {"kind": "erg", "mod": mod, "tag": tag, "surprise": resid, "seconds": t,
              "cp_before": before, "cp_after": athlete.erg_cp(mod, today=False) * 60.0}
@@ -176,6 +180,22 @@ def _observe_time(athlete: Athlete, ev: dict, resid: float, noise: float, tag: s
     athlete.count("met")
     athlete.events.append({"kind": "metcon", "tag": tag, "surprise": resid,
                            "met_before": before, "met_after": athlete.b.value("met"), **detail})
+
+
+def _gym_fixed(block: dict) -> set[str]:
+    """체육관이 무게를 지정한 동작(예: 쓰러스터 6kg). 내가 고른 무게가 아니다."""
+    out: set[str] = set()
+
+    def walk(items):
+        for it in items:
+            if it.get("options"):
+                walk(it["options"])
+            elif it.get("load") is not None:
+                out.add(it["movement"])
+    walk(block.get("items") or [])
+    for st in block.get("stations") or []:
+        walk(st["items"])
+    return out
 
 
 def _apply_one_metcon(athlete: Athlete, block: dict, res: dict, tag: str) -> dict:
@@ -240,9 +260,10 @@ def _apply_one_metcon(athlete: Athlete, block: dict, res: dict, tag: str) -> dic
     used = res.get("loads") or {}
     adjust = {"light": 0.12, "good": 0.0, "heavy": -0.12, None: 0.0}[feel] - (0.05 if dnf else 0.0)
     by_imp: dict[str, list[float]] = {}
+    fixed = _gym_fixed(block)
     for m, w0 in planned.items():
         imp = C.movement(m)["implement"]
-        if imp in LOADED and w0 > 0 and (m in used or feel or dnf):
+        if imp in LOADED and w0 > 0 and m not in fixed and (m in used or feel or dnf):
             by_imp.setdefault(imp, []).append(math.log(used.get(m, w0) / w0))
     for imp, ratios in by_imp.items():
         shift = sum(ratios) / len(ratios) + adjust

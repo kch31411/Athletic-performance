@@ -18,6 +18,8 @@ def load_convention(mid: str) -> str | None:
     m = C.movement(mid)
     if m["implement"] == "dumbbell":
         return "each_of_two_dumbbells" if m["hands"] == 2 else "single_dumbbell"
+    if m["implement"] == "kettlebell" and m["hands"] == 2:
+        return "each_of_two_kettlebells"
     return CONVENTION.get(m["implement"])
 
 
@@ -150,6 +152,8 @@ def metcon(athlete: Athlete, ev: dict) -> dict:
                 row["scale_to_keep_rest"] = st["scale_to"]
             if st.get("alts"):
                 row["alternatives"] = [a["movement"] for a in st["alts"]]
+            if ev.get("share", 1.0) < 1.0:
+                row["amounts_are_my_share_of_team_total"] = ev["share"]
             out["stations"].append(row)
     elif fmt == "interval":
         out["work_s"], out["rest_s"], out["total_min"] = block["work_s"], block.get("rest_s"), p["total_min"]

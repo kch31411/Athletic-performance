@@ -6,3 +6,24 @@ sessions:
     loads:
       db_snatch: 20.0
     rpe: 8.0
+    ergs:
+    - erg: ski
+      time: 45.0
+      effort: submax
+      cal: 11.88
+- id: hyrox_engine
+  results:
+  - block: 1
+    loads:
+      kb_box_step_up: 20.0
+    rpe: 6.5
+    load_feel: heavy
+    ergs:
+    - erg: row
+      time: 42.0
+      effort: submax
+      cal: 15.17
+    - erg: ski
+      time: 49.0
+      effort: submax
+      cal: 14.97

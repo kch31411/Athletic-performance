@@ -478,7 +478,9 @@ def _eval_emom(athlete: Athlete, block: dict, loads_in, picks) -> dict:
     items = resolve_items(athlete, block["items"], picks)
     n = block.get("rounds") or 1
     interval = block["interval_s"]
-    rounds = [round_units(block, items, ri) for ri in range(n)]
+    team = block["team"]
+    share = 1.0 / team["size"] if team["size"] > 1 and team["style"] == "split" else 1.0
+    rounds = [round_units(block, items, ri, share) for ri in range(n)]
     loads, limiter = choose_loads(athlete, rounds, items, block["intensity"], True)
     loads.update(loads_in or {})
     ctx = {"t_ref": 240.0, "erg_mix": 1.0, "lam": 0.03, "rest_scale": 0.6}
@@ -506,7 +508,7 @@ def _eval_emom(athlete: Athlete, block: dict, loads_in, picks) -> dict:
             st["limited_by"] = limiter.get(it["movement"]) if limiter.get(it["movement"]) != it["movement"] else None
         stations.append(st)
     work_s = sum(x["t_final"] for r in raws_all for x in r)
-    return {"format": "emom", "block": block, "loads": loads, "stations": stations,
+    return {"format": "emom", "block": block, "loads": loads, "stations": stations, "share": share,
             "pred": {"total_min": n * len(items) * interval / 60.0, "work_s": work_s},
             "h": {}, "stress": stress_of(athlete, raws_all), "work_min": work_s / 60.0}
 

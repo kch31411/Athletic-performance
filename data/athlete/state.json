@@ -1,7 +1,7 @@
 {
   "as_of": "2026-11-27",
   "observations": {
-    "eng": 1,
+    "eng": 2,
     "met": 2,
     "str:hinge": 1,
     "str:push_h": 1,
@@ -10,19 +10,19 @@
   },
   "strength_1rm": {
     "back_squat": {
-      "e1rm_kg": 108.9,
+      "e1rm_kg": 109.0,
       "sd_pct": 5.1
     },
     "deadlift": {
-      "e1rm_kg": 117.5,
+      "e1rm_kg": 117.6,
       "sd_pct": 5.7
     },
     "bench_press": {
-      "e1rm_kg": 75.7,
+      "e1rm_kg": 75.8,
       "sd_pct": 5.1
     },
     "strict_press": {
-      "e1rm_kg": 53.2,
+      "e1rm_kg": 53.3,
       "sd_pct": 5.1
     },
     "barbell_row": {
@@ -34,12 +34,12 @@
       "sd_pct": 16.0
     },
     "pull_up": {
-      "e1rm_kg": 98.1,
+      "e1rm_kg": 98.2,
       "sd_pct": 16.0,
       "max_reps": 12.7
     },
     "push_up": {
-      "e1rm_kg": 101.5,
+      "e1rm_kg": 101.6,
       "sd_pct": 13.3,
       "max_reps": 35.9
     },
@@ -50,34 +50,34 @@
   },
   "engine": {
     "row": {
-      "cal_per_min": 14.5,
+      "cal_per_min": 15.0,
       "sd_pct": 14.4,
-      "cal_1min": 21.8
+      "cal_1min": 22.8
     },
     "ski": {
-      "cal_per_min": 13.8,
+      "cal_per_min": 14.0,
       "sd_pct": 14.4,
-      "cal_1min": 20.7
+      "cal_1min": 21.4
     },
     "bike": {
-      "cal_per_min": 14.5,
+      "cal_per_min": 14.7,
       "sd_pct": 14.4,
-      "cal_1min": 21.8
+      "cal_1min": 22.5
     },
     "assault": {
-      "cal_per_min": 15.2,
+      "cal_per_min": 15.5,
       "sd_pct": 14.4,
-      "cal_1min": 22.9
+      "cal_1min": 23.6
     },
     "run": {
       "cal_per_min": 11.6,
       "sd_pct": 7.3,
-      "cal_1min": 17.3
+      "cal_1min": 17.8
     }
   },
   "factors": {
     "ana": {
-      "value": -0.0002,
+      "value": 0.0536,
       "sd": 0.3004
     },
     "end": {
@@ -85,7 +85,7 @@
       "sd": 0.1979
     },
     "end.pat:hinge": {
-      "value": -0.0101,
+      "value": -0.01,
       "sd": 0.1495
     },
     "end.pat:lunge": {
@@ -117,7 +117,7 @@
       "sd": 0.1491
     },
     "eng": {
-      "value": -0.0138,
+      "value": 0.0016,
       "sd": 0.1041
     },
     "eng.mod:assault": {
@@ -129,11 +129,11 @@
       "sd": 0.1
     },
     "eng.mod:row": {
-      "value": 0.0,
+      "value": 0.0144,
       "sd": 0.1001
     },
     "eng.mod:run": {
-      "value": -0.0043,
+      "value": -0.014,
       "sd": 0.0895
     },
     "eng.mod:ski": {
@@ -177,20 +177,20 @@
       "sd": 0.15
     },
     "loadpref": {
-      "value": 0.0584,
-      "sd": 0.0545
+      "value": 0.08,
+      "sd": 0.0519
     },
     "loadpref.imp:barbell": {
-      "value": 0.0771,
-      "sd": 0.089
+      "value": 0.0628,
+      "sd": 0.0883
     },
     "loadpref.imp:dumbbell": {
-      "value": 0.241,
-      "sd": 0.1031
+      "value": 0.2303,
+      "sd": 0.1028
     },
     "loadpref.imp:kettlebell": {
-      "value": 0.0,
-      "sd": 0.14
+      "value": 0.1424,
+      "sd": 0.0883
     },
     "met": {
       "value": 0.0349,
@@ -217,7 +217,7 @@
       "sd": 0.08
     },
     "str": {
-      "value": 0.0158,
+      "value": 0.0166,
       "sd": 0.074
     },
     "str.mov:back_squat": {
@@ -248,8 +248,12 @@
       "value": 0.0,
       "sd": 0.1
     },
+    "str.mov:db_thruster": {
+      "value": 0.0,
+      "sd": 0.1
+    },
     "str.mov:deadlift": {
-      "value": -0.0357,
+      "value": -0.0356,
       "sd": 0.08
     },
     "str.mov:front_squat": {
@@ -257,6 +261,10 @@
       "sd": 0.0687
     },
     "str.mov:hang_clean_and_jerk": {
+      "value": 0.0,
+      "sd": 0.1
+    },
+    "str.mov:kb_box_step_up": {
       "value": 0.0,
       "sd": 0.1
     },
@@ -269,7 +277,7 @@
       "sd": 0.1
     },
     "str.mov:strict_press": {
-      "value": 0.0405,
+      "value": 0.0406,
       "sd": 0.0798
     },
     "str.mov:thruster": {
@@ -277,7 +285,7 @@
       "sd": 0.1
     },
     "str.pat:hinge": {
-      "value": -0.0357,
+      "value": -0.0356,
       "sd": 0.08
     },
     "str.pat:lunge": {
@@ -301,7 +309,7 @@
       "sd": 0.0798
     },
     "str.pat:push_v": {
-      "value": 0.0405,
+      "value": 0.0406,
       "sd": 0.0798
     },
     "str.pat:squat": {
@@ -310,15 +318,17 @@
     }
   },
   "fatigue": {
-    "squat": 5.06,
-    "hinge": 3.53,
-    "push_h": 1.17,
-    "push_v": 4.83,
-    "pull_h": 0.41,
-    "pull_v": 2.88,
+    "squat": 6.44,
+    "hinge": 3.66,
+    "lunge": 5.82,
+    "push_h": 1.62,
+    "push_v": 5.44,
+    "pull_h": 0.62,
+    "pull_v": 3.11,
     "olympic": 9.19,
-    "plyo": 3.9
+    "core": 0.14,
+    "plyo": 5.4
   },
-  "systemic_fatigue": 1.93,
+  "systemic_fatigue": 3.09,
   "acwr": null
 }
