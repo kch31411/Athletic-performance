@@ -130,7 +130,7 @@
     },
     "eng.mod:row": {
       "value": 0.0,
-      "sd": 0.1
+      "sd": 0.1001
     },
     "eng.mod:run": {
       "value": -0.0043,
@@ -138,7 +138,7 @@
     },
     "eng.mod:ski": {
       "value": 0.0,
-      "sd": 0.1001
+      "sd": 0.1
     },
     "hyx.run": {
       "value": 0.0,
@@ -310,11 +310,11 @@
     }
   },
   "fatigue": {
-    "squat": 5.08,
+    "squat": 5.06,
     "hinge": 3.53,
     "push_h": 1.17,
     "push_v": 4.83,
-    "pull_h": 0.42,
+    "pull_h": 0.41,
     "pull_v": 2.88,
     "olympic": 9.19,
     "plyo": 3.9
